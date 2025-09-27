@@ -1,0 +1,85 @@
+---
+alwaysApply: true
+description: Frontend development standards for React + TypeScript + Vite project with Tailwind CSS and Framer Motion
+---
+
+# Frontend Development Standards
+
+## Tech Stack
+- **Framework**: React 19+ with TypeScript
+- **Build Tool**: Vite for fast development and optimized builds
+- **Styling**: Tailwind CSS for utility-first styling
+- **Animations**: Framer Motion for all animations and transitions
+
+## Project Structure
+- Main entry: [src/main.tsx](mdc:src/main.tsx)
+- App component: [src/App.tsx](mdc:src/App.tsx)
+- Components: Organize in [src/components](mdc:src/components) directory
+- Assets: Store in [src/assets](mdc:src/assets) directory
+
+## Styling Standards
+- **Always use Tailwind CSS** for all styling unless absolutely impossible
+- **Fully responsive layouts**: Design mobile-first, ensure seamless adaptation across mobile, tablet, and desktop
+- **No fixed dimensions**: Avoid fixed widths/heights unless unavoidable - use responsive units
+- **Clean and minimal design**: Follow modern design principles with clear visual hierarchy
+- **Intuitive UI**: Prioritize user experience and accessibility
+
+## Animation Standards
+- **Use Framer Motion exclusively** for all animations and transitions
+- **Import motion components**: Use `motion.div`, `motion.button`, etc. instead of regular HTML elements
+- **Subtle and purposeful**: Animations should guide user attention without being distracting
+- **Include hover states**: Add smooth hover effects for interactive elements
+- **Smooth transitions**: Implement smooth page/view changes and component state transitions
+- **Performance-focused**: Use transform and opacity for smooth 60fps animations
+
+## React Development
+- **Functional components only**: Use modern React patterns with hooks
+- **TypeScript strict mode**: Avoid `any` types, define proper interfaces and types
+- **Custom hooks**: Extract reusable logic into custom hooks
+- **Error boundaries**: Implement proper error handling
+- **Code organization**: Group related components, hooks, and utilities together
+
+## Code Quality
+- **Clear comments**: Write plain, descriptive comments without emojis
+- **Descriptive naming**: Use clear variable and function names that explain intent
+- **Consistent conventions**: camelCase for variables/functions, PascalCase for components
+- **Modern React features**: Utilize React 19+ features like Suspense and concurrent rendering
+
+## Performance
+- **Code splitting**: Implement lazy loading for optimal bundle size
+- **Optimize re-renders**: Use React.memo, useMemo, and useCallback judiciously
+- **Loading states**: Implement proper loading states and skeleton screens
+- **Asset optimization**: Optimize images and assets for web delivery
+
+## Example Implementation Patterns
+
+### Motion Component with Responsive Design
+```tsx
+import { motion } from 'framer-motion'
+
+const Button = () => (
+  <motion.button
+    className="px-4 py-2 md:px-6 md:py-3 bg-blue-600 text-white rounded-lg shadow-md"
+    whileHover={{ scale: 1.05, backgroundColor: "#2563eb" }}
+    whileTap={{ scale: 0.95 }}
+    transition={{ duration: 0.2 }}
+  >
+    Click me
+  </motion.button>
+)
+```
+
+### Page Transitions
+```tsx
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0 },
+  out: { opacity: 0, y: -20 }
+}
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.4
+}
+```
