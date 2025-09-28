@@ -20,3 +20,14 @@ model Quiz {
   questions Json
   createdAt DateTime @default(now())
 }
+
+// demo quiz table for rate limiting
+model DemoQuiz {
+  id        Int      @id @default(autoincrement())
+  topic     String
+  questions Json
+  ipAddress String
+  createdAt DateTime @default(now())
+  
+  @@index([ipAddress, createdAt])
+}

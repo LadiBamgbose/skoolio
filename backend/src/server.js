@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import QuizRoutes from "./apiRoutes/QuizRoutes.js";
+import DemoQuizRoutes from "./apiRoutes/DemoQuizRoutes.js";
 
 const app = express();
 const PORT = 4000;
@@ -10,6 +11,9 @@ app.use(express.json());
 
 // Quiz routes
 app.use("/api/quiz", QuizRoutes);
+
+// Demo quiz routes
+app.use("/api/demo-quiz", DemoQuizRoutes);
 
 
 
