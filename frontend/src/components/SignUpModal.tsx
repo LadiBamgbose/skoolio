@@ -5,7 +5,7 @@ import { useState } from 'react'
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  triggerAction?: string; // "quiz" or "signup" to customize messaging
+  triggerAction?: string; // "quiz", "signup", or "demo-limit" to customize messaging
 }
 
 export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpModalProps) {
@@ -70,7 +70,9 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  {triggerAction === 'quiz' ? 'Start Creating Quizzes!' : 'Join Skoolio'}
+                  {triggerAction === 'quiz' ? 'Start Creating Quizzes!' : 
+                   triggerAction === 'demo-limit' ? 'Demo Limit Reached!' : 
+                   'Join Skoolio'}
                 </motion.h2>
                 <motion.p 
                   className="text-gray-600"
@@ -80,6 +82,8 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                 >
                   {triggerAction === 'quiz' 
                     ? 'Create your account to generate unlimited quizzes'
+                    : triggerAction === 'demo-limit'
+                     ? "You've reached the free demo limit. Sign up to create unlimited quizzes and games!"
                     : 'Transform your classroom with interactive quiz games'
                   }
                 </motion.p>

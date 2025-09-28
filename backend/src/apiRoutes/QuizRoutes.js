@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createQuiz, getAllQuizzes } from "../prismaLogic/Quiz.js";
+import QuizLogic from "../prismaLogic/Quiz.js";
 
 const router = Router();
 
@@ -13,22 +13,34 @@ router.post("/", async (req, res) => {
       { question: "What is 2+2?", options: ["3", "4", "5", "6"], answer: "4" },
     ];
 
-    const quiz = await createQuiz(prompt, fakeQuestions);
-    res.json(quiz);
+    const quiz = await QuizLogic.createQuiz(prompt, fakeQuestions);
+    res.json({
+      success: true,
+      quiz
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to create quiz" });
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to create quiz" 
+    });
   }
 });
 
 // GET fetch all quizzes
 router.get("/", async (req, res) => {
   try {
-    const quizzes = await getAllQuizzes();
-    res.json(quizzes);
+    const quizzes = await QuizLogic.getAllQuizzes();
+    res.json({
+      success: true,
+      quizzes
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch quizzes" });
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch quizzes" 
+    });
   }
 });
 

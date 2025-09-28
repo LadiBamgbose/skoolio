@@ -2,21 +2,29 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import DemoQuizService from '../services/demoQuizService'
+import SignUpModal from '../components/SignUpModal'
 
 export default function Loading() {
   const navigate = useNavigate()
   const location = useLocation()
   const topic = location.state?.topic || 'your topic'
   const [currentStep, setCurrentStep] = useState(0)
+  const [showSignUpModal, setShowSignUpModal] = useState(false)
 
   useEffect(() => {
     const generateQuiz = async () => {
       try {
-        // Step 1: Analyzing topic
+        // Step 1: Check demo status
         setCurrentStep(0)
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        const status = await DemoQuizService.getDemoStatus()
         
-        // Step 2: Creating questions
+        if (!status.canCreateDemo) {
+          // Show signup modal if rate limited
+          setShowSignUpModal(true)
+          return
+        }
+        
+        // Step 2: Analyzing topic
         setCurrentStep(1)
         await new Promise(resolve => setTimeout(resolve, 1000))
         
@@ -24,12 +32,13 @@ export default function Loading() {
         setCurrentStep(2)
         const quizData = await DemoQuizService.generateDemoQuiz(topic)
         
+        
         // Navigate to quiz ready with the generated quiz
         navigate('/quiz-ready', { 
           state: { 
             topic,
             quiz: quizData.quiz,
-            questions: quizData.questions 
+            questions: quizData.quiz.questions 
           } 
         })
         
@@ -89,9 +98,9 @@ export default function Loading() {
         {/* Progress Steps */}
         <div className="space-y-3">
           {[
+            "Checking demo availability...",
             "Analyzing your topic...",
-            "Creating engaging questions...",
-            "Setting up your quiz game..."
+            "Creating engaging questions..."
           ].map((step, index) => (
             <motion.div
               key={step}
@@ -118,6 +127,15 @@ export default function Loading() {
           ))}
         </div>
       </motion.div>
+      
+      <SignUpModal 
+        isOpen={showSignUpModal}
+        onClose={() => {
+          setShowSignUpModal(false)
+          navigate('/')
+        }}
+        triggerAction="demo-limit"
+      />
     </div>
   )
 }
