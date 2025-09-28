@@ -1,53 +1,36 @@
 import OpenAI from 'openai';
+import { generateQuizPrompt } from '../prompts/index.js';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 class OpenAIService {
-  static async generateQuizQuestions(topic) {
+  static async generateQuizQuestions(topic, options = {}) {
     try {
-      const prompt = `Generate a 5-question multiple choice quiz about: "${topic}"
+      // Prepare prompt parameters
+      const promptParams = {
+        topic,
+        questionCount: options.questionCount || generateQuizPrompt.validation.defaultQuestionCount,
+        difficulty: options.difficulty || 'Medium',
+        educationLevel: options.educationLevel || 'Middle/High school appropriate'
+      };
 
-Requirements:
-- Educational level: Middle/High school appropriate
-- Each question should have exactly 4 options labeled A, B, C, D
-- Only one correct answer per question
-- Include a brief explanation for each correct answer
-- Make questions engaging and educational
-
-Return ONLY a valid JSON object in this exact format:
-{
-  "topic": "${topic}",
-  "questions": [
-    {
-      "question": "What is...",
-      "options": [
-        "A) Option 1",
-        "B) Option 2", 
-        "C) Option 3",
-        "D) Option 4"
-      ],
-      "correct": "B",
-      "explanation": "Brief explanation of why B is correct"
-    }
-  ]
-}`;
+      // Generate prompt using template
+      const userPrompt = generateQuizPrompt.template(promptParams);
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini", // Cost-effective model
+        ...generateQuizPrompt.config,
         messages: [
           {
             role: "system",
-            content: "You are an educational quiz generator. Always respond with valid JSON only, no additional text."
+            content: generateQuizPrompt.systemMessage
           },
           {
             role: "user",
-            content: prompt
+            content: userPrompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
       });
 
       const response = completion.choices[0].message.content.trim();
@@ -61,19 +44,28 @@ Return ONLY a valid JSON object in this exact format:
         throw new Error('Invalid response format from AI');
       }
 
-      // Validate structure
-      if (!quizData.questions || !Array.isArray(quizData.questions) || quizData.questions.length !== 5) {
-        throw new Error('AI response missing required questions array with 5 questions');
+      // Validate structure using prompt validation rules
+      const { validation } = generateQuizPrompt;
+      const expectedQuestionCount = promptParams.questionCount;
+      
+      if (!quizData.questions || !Array.isArray(quizData.questions) || quizData.questions.length !== expectedQuestionCount) {
+        throw new Error(`AI response missing required questions array with ${expectedQuestionCount} questions`);
       }
 
       // Validate each question structure
       for (let i = 0; i < quizData.questions.length; i++) {
         const q = quizData.questions[i];
-        if (!q.question || !q.options || !q.correct || !q.explanation) {
-          throw new Error(`Question ${i + 1} missing required fields`);
+        
+        // Check required fields
+        for (const field of validation.questionFields) {
+          if (!q[field]) {
+            throw new Error(`Question ${i + 1} missing required field: ${field}`);
+          }
         }
-        if (!Array.isArray(q.options) || q.options.length !== 4) {
-          throw new Error(`Question ${i + 1} must have exactly 4 options`);
+        
+        // Check options count
+        if (!Array.isArray(q.options) || q.options.length !== validation.optionsCount) {
+          throw new Error(`Question ${i + 1} must have exactly ${validation.optionsCount} options`);
         }
       }
 

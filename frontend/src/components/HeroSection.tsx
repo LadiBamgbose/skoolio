@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
-// import DemoQuizService from '../services/demoQuizService' // Removed to debug
 
 export default function HeroSection() {
   const [topic, setTopic] = useState('')
@@ -20,24 +19,11 @@ export default function HeroSection() {
     }
   }, [location.state, navigate, location.pathname])
 
-  const handleGenerateGame = async () => {
+  const handleGenerateGame = () => {
     if (!topic.trim()) return
 
-    setIsLoading(true)
-    setError('') // Clear any previous errors
-    
-    try {
-      // Temporarily skip API call to test if this is still the issue
-      console.log('Generating game for topic:', topic.trim())
-      
-      // Navigate to loading screen with topic
-      navigate('/loading', { state: { topic: topic.trim() } })
-      
-    } catch (error) {
-      console.error('Error:', error)
-      setError('Something went wrong. Please try again.')
-      setIsLoading(false)
-    }
+    // Simple navigation to loading screen with topic
+    navigate('/loading', { state: { topic: topic.trim() } })
   }
 
   return (
@@ -104,7 +90,7 @@ export default function HeroSection() {
         </motion.div>
       </motion.div>
 
-      {/* Main Content */}
+      {/* Text Area*/}
       <motion.div
         className="w-full max-w-6xl px-8 mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
         initial={{ opacity: 0, y: 20 }}
@@ -153,17 +139,9 @@ export default function HeroSection() {
               }}
               whileTap={{ scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              disabled={!topic.trim() || isLoading}
+              disabled={!topic.trim()}
             >
-              {isLoading ? (
-                <motion.div
-                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                />
-              ) : (
-                <ArrowUp className="w-6 h-6 text-white" />
-              )}
+              <ArrowUp className="w-6 h-6 text-white" />
             </motion.button>
           </div>
         </motion.div>

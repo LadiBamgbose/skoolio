@@ -16,7 +16,7 @@ const getClientIP = (req) => {
 // POST /api/demo-quiz - Generate a demo quiz
 router.post('/', async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { topic, questionCount, difficulty, educationLevel, adminKey } = req.body;
 
     // Validate input
     if (!topic || typeof topic !== 'string' || topic.trim().length === 0) {
@@ -34,19 +34,29 @@ router.post('/', async (req, res) => {
     // Get client IP for rate limiting
     const clientIP = getClientIP(req);
     
-    // Check rate limit: 1 demo quiz per IP per hour
-    const recentDemoCount = await DemoQuizLogic.countRecentDemoQuizzesByIP(clientIP);
-    
-    if (recentDemoCount >= 1) {
-      return res.status(429).json({
-        error: 'Demo limit reached. You can try one demo quiz per hour. Sign up for unlimited access!',
-        rateLimitReached: true
-      });
+    // Check rate limit: 1 demo quiz per IP per hour (skip if admin key provided)
+    if (!adminKey || adminKey !== 'skoolio_dev_2024') {
+      const recentDemoCount = await DemoQuizLogic.countRecentDemoQuizzesByIP(clientIP);
+      
+      if (recentDemoCount >= 1) {
+        return res.status(429).json({
+          error: 'Demo limit reached. You can try one demo quiz per hour. Sign up for unlimited access!',
+          rateLimitReached: true
+        });
+      }
     }
+
+    // Prepare options from frontend (with defaults)
+    const options = {
+      questionCount: questionCount || 5,
+      difficulty: difficulty || 'Medium',
+      educationLevel: educationLevel || 'Middle/High school appropriate'
+    };
 
     // Generate quiz using OpenAI
     console.log(`Generating demo quiz for topic: "${topic.trim()}" from IP: ${clientIP}`);
-    const quizData = await OpenAIService.generateQuizQuestions(topic.trim());
+    console.log('Quiz options:', options);
+    const quizData = await OpenAIService.generateQuizQuestions(topic.trim(), options);
 
     // Save demo quiz to database
     const savedDemoQuiz = await DemoQuizLogic.createDemoQuiz(
@@ -92,6 +102,17 @@ router.post('/', async (req, res) => {
 router.get('/status', async (req, res) => {
   try {
     const clientIP = getClientIP(req);
+    const adminKey = req.query.adminKey;
+    
+    // Skip rate limit check if admin key provided
+    if (adminKey && adminKey === 'skoolio_dev_2024') {
+      return res.status(200).json({
+        canCreateDemo: true,
+        demosUsedInLastHour: 0,
+        limit: 1
+      });
+    }
+    
     const recentDemoCount = await DemoQuizLogic.countRecentDemoQuizzesByIP(clientIP);
     
     res.status(200).json({
