@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import DemoQuizService from '../services/demoQuizService'
-import SignUpModal from '../components/SignUpModal'
+import SignUpModal from '../components/shared/SignUpModal'
 
 export default function Loading() {
   const navigate = useNavigate()
