@@ -1,6 +1,6 @@
-import HeroSection from '../components/HeroSection'
-import TestimonialsSection from '../components/TestimonialsSection'
-import PricingSection from '../components/PricingSection'
+import HeroSection from '../components/landing/HeroSection'
+import TestimonialsSection from '../components/landing/TestimonialsSection'
+import PricingSection from '../components/landing/PricingSection'
 
 export default function Landing() {
   return (

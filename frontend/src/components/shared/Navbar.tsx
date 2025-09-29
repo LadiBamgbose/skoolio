@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import skoolioLogo from '../assets/Skoolio.png'
+import skoolioLogo from '../../assets/Skoolio.png'
 import SignUpModal from './SignUpModal'
 
 export default function Navbar() {

@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Play } from 'lucide-react'
-import { useState } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination } from 'swiper/modules'
 import 'swiper/swiper-bundle.css'
+import QuestionCard from '../components/quiz-ready/QuestionCard'
 
 interface Question {
   question: string;
@@ -13,79 +13,9 @@ interface Question {
   explanation?: string;
 }
 
-// Question Card Component with flip functionality
-function QuestionCard({ question, index }: { question: Question; index: number }) {
-  const [isFlipped, setIsFlipped] = useState(false)
-
-  return (
-    <motion.div
-      className="relative w-full h-[600px] cursor-pointer"
-      onClick={() => setIsFlipped(!isFlipped)}
-      style={{ perspective: '2000px' }}
-    >
-      <motion.div
-        className="relative w-full h-full"
-        style={{ transformStyle: 'preserve-3d' }}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Front of card - Question */}
-        <div
-          className="absolute w-full h-full bg-white/10 backdrop-blur-sm border border-gray-600 rounded-2xl shadow-xl p-8 flex flex-col justify-between"
-          style={{ backfaceVisibility: 'hidden' }}
-        >
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-sm font-medium text-cyan-400 bg-cyan-500/20 px-3 py-1 rounded-full">
-                Question {index + 1}
-              </span>
-              <span className="text-xs text-gray-300">Tap to reveal answer</span>
-            </div>
-            
-            <h3 className="text-xl font-bold text-white mb-8 leading-relaxed">
-              {question.question}
-            </h3>
-            
-            <div className="space-y-5">
-              {question.options.map((option, optionIndex) => (
-                <div
-                  key={optionIndex}
-                  className="p-5 bg-white/5 rounded-lg border border-gray-500 hover:border-gray-400 transition-colors"
-                >
-                  <span className="font-medium text-gray-200">{option}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Back of card - Answer */}
-        <div
-          className="absolute w-full h-full bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-8 flex flex-col justify-start items-center text-white"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-        >
-          <div className="text-center mt-12">
-            <h3 className="text-2xl font-bold mb-6">Correct Answer</h3>
-            <div className="text-xl font-semibold mb-8 bg-white/20 rounded-lg p-4 max-w-sm mx-auto">
-              {question.correct}
-            </div>
-            
-            {question.explanation && (
-              <div className="text-white/90 leading-relaxed mb-8 max-w-md mx-auto">
-                <p>{question.explanation}</p>
-              </div>
-            )}
-            
-            <p className="text-white/60 text-sm">Tap to return to question</p>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  )
-}
-
 export default function QuizReady() {
   const location = useLocation()
+  const navigate = useNavigate()
   const topic = location.state?.topic || 'Your Topic'
   const questions: Question[] = location.state?.questions || []
 
@@ -103,7 +33,7 @@ export default function QuizReady() {
           transition={{ duration: 0.8 }}
         >
           <motion.h1 
-            className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4 capitalize"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4 capitalize leading-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -193,8 +123,13 @@ export default function QuizReady() {
               }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                // TODO: Start game functionality
-                console.log('Starting game...')
+                // Navigate to quiz game with questions data
+                navigate('/quiz-game', {
+                  state: {
+                    topic,
+                    questions
+                  }
+                })
               }}
             >
               <Play className="w-6 h-6" />

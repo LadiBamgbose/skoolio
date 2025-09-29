@@ -1,8 +1,3 @@
----
-alwaysApply: true
-description: Frontend development standards for React + TypeScript + Vite project with Tailwind CSS and Framer Motion
----
-
 # Frontend Development Standards
 
 ## Tech Stack
