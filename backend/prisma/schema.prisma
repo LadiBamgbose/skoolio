@@ -15,10 +15,11 @@ datasource db {
 
 // quiz table 
 model Quiz {
-  id        Int      @id @default(autoincrement())
-  prompt    String
-  questions Json
-  createdAt DateTime @default(now())
+  id           Int           @id @default(autoincrement())
+  prompt       String
+  questions    Json
+  createdAt    DateTime      @default(now())
+  gameSessions GameSession[]
 }
 
 // demo quiz table for rate limiting
@@ -30,4 +31,20 @@ model DemoQuiz {
   createdAt DateTime @default(now())
   
   @@index([ipAddress, createdAt])
+}
+
+// game session table for multiplayer games
+model GameSession {
+  id        Int       @id @default(autoincrement())
+  quizId    Int?
+  quiz      Quiz?     @relation(fields: [quizId], references: [id])
+  roomPin   String    @unique
+  status    String    // waiting | active | ended
+  results   Json?     // Final scores and leaderboard
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  
+  @@index([roomPin])
+  @@index([status])
 }
