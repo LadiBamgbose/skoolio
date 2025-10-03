@@ -5,6 +5,8 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination } from 'swiper/modules'
 import 'swiper/swiper-bundle.css'
 import QuestionCard from '../components/quiz-ready/QuestionCard'
+import { useSocket } from '../contexts/SocketContext'
+import { useEffect } from 'react'
 
 interface Question {
   question: string;
@@ -16,8 +18,24 @@ interface Question {
 export default function QuizReady() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { socket } = useSocket()
   const topic = location.state?.topic || 'Your Topic'
   const questions: Question[] = location.state?.questions || []
+  const quiz = location.state?.quiz
+
+  useEffect(() => {
+    if (!socket) return
+
+    // Listen for room created event
+    socket.on('room_created', (data) => {
+      console.log('Room created with PIN:', data.pin)
+      navigate(`/teacher/lobby/${data.pin}`)
+    })
+
+    return () => {
+      socket.off('room_created')
+    }
+  }, [socket, navigate])
 
 
   return (
@@ -123,12 +141,18 @@ export default function QuizReady() {
               }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                // Navigate to quiz game with questions data
-                navigate('/quiz-game', {
-                  state: {
+                if (!socket) {
+                  console.error('Socket not connected')
+                  return
+                }
+                
+                // Emit create_room event with quiz data
+                socket.emit('create_room', {
+                  quizData: {
                     topic,
                     questions
-                  }
+                  },
+                  quizId: quiz?.id || null
                 })
               }}
             >
