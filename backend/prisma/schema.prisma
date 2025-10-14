@@ -13,22 +13,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// quiz table 
+// Quiz table - teachers generate quizzes
 model Quiz {
-  id        Int      @id @default(autoincrement())
-  prompt    String
-  questions Json
-  shareLink String   @unique
-  createdAt DateTime @default(now())
-}
-
-// demo quiz table for rate limiting (keeping for backwards compatibility)
-model DemoQuiz {
-  id        Int      @id @default(autoincrement())
-  topic     String
-  questions Json
-  ipAddress String
-  createdAt DateTime @default(now())
+  id            Int             @id @default(autoincrement())
+  prompt        String
+  questions     Json
+  shareLink     String          @unique  // For students to access
+  gradeLevel    String
+  questionCount Int
+  createdAt     DateTime        @default(now())
+  ipAddress     String          // Rate limit: 3 quiz creations/month per IP
+  
+  responses     QuizResponse[]
+  stats         QuizStats?
   
   @@index([ipAddress, createdAt])
+  @@index([shareLink])
+}
+
+// Quiz responses - students submit answers
+model QuizResponse {
+  id              Int      @id @default(autoincrement())
+  quizId          Int
+  quiz            Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  studentName     String
+  answers         Json
+  score           Int
+  totalQuestions  Int
+  completedAt     DateTime @default(now())
+  timeTaken       Int?
+  
+  @@index([quizId])
+}
+
+// Quiz statistics - aggregated data for teachers
+model QuizStats {
+  id                  Int      @id @default(autoincrement())
+  quizId              Int      @unique
+  quiz                Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  totalResponses      Int      @default(0)
+  averageScore        Float    @default(0)
+  highestScore        Int      @default(0)
+  lowestScore         Int?
+  averageTimeSeconds  Float?
+  lastUpdated         DateTime @updatedAt
 }
