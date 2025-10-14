@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { ArrowUp, ChevronDown } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
+import SignUpModal from '../shared/SignUpModal'
 
 const gradeLevels = [
   { id: 'k', name: 'K' },
@@ -20,10 +21,21 @@ const gradeLevels = [
   { id: '12', name: '12th Grade' },
 ]
 
+const questionCounts = [
+  { id: 10, name: '10 Questions' },
+  { id: 15, name: '15 Questions' },
+  { id: 20, name: '20 Questions' },
+  { id: 25, name: '25 Questions' },
+  { id: 30, name: '30 Questions' },
+]
+
 export default function HeroSection() {
   const [topic, setTopic] = useState('')
   const [gradeLevel, setGradeLevel] = useState(gradeLevels[5]) // Default to 6th grade
+  const [questionCount, setQuestionCount] = useState(questionCounts[0]) // Default to 5
   const [error, setError] = useState('')
+  const [showSignUpModal, setShowSignUpModal] = useState(false)
+  const isTeacherPlan = false // TODO: Get from auth context
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -36,11 +48,25 @@ export default function HeroSection() {
     }
   }, [location.state, navigate, location.pathname])
 
+  const handleQuestionCountChange = (newCount: typeof questionCounts[0]) => {
+    if (!isTeacherPlan) {
+      setShowSignUpModal(true)
+      return
+    }
+    setQuestionCount(newCount)
+  }
+
   const handleGenerateGame = () => {
     if (!topic.trim()) return
 
-    // Simple navigation to loading screen with topic and grade level
-    navigate('/loading', { state: { topic: topic.trim(), gradeLevel: gradeLevel.name } })
+    // Simple navigation to loading screen with topic, grade level, and question count
+    navigate('/loading', { 
+      state: { 
+        topic: topic.trim(), 
+        gradeLevel: gradeLevel.name,
+        questionCount: questionCount.id 
+      } 
+    })
   }
 
   return (
@@ -82,7 +108,7 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
           >
-            Turn any topic into a live classroom game in seconds.
+            Generate engaging classroom quizzes in seconds.
           </motion.p>
           
           {/* Moving shimmer overlay */}
@@ -102,7 +128,7 @@ export default function HeroSection() {
               delay: 0
             }}
           >
-            Turn any topic into a live classroom game in seconds.
+            Generate engaging classroom quizzes in seconds.
           </motion.p>
         </motion.div>
       </motion.div>
@@ -138,13 +164,45 @@ export default function HeroSection() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="Enter a topic or paste your lesson text…"
-              className="w-full h-32 md:h-40 px-8 py-6 pr-64 text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
+              className="w-full h-32 md:h-40 px-8 py-6 pr-[450px] text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
               whileFocus={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             />
             
-            {/* Grade Level Dropdown and Submit Button */}
+            {/* Dropdowns and Submit Button */}
             <div className="absolute bottom-3 right-3 flex items-center gap-2">
+              {/* Questions Dropdown */}
+              <Listbox value={questionCount} onChange={handleQuestionCountChange}>
+                <div className="relative">
+                  <ListboxButton 
+                    className="relative w-40 cursor-pointer rounded-xl py-3 pl-4 pr-10 text-left shadow-md backdrop-blur-sm transition-all duration-200"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.15), rgba(37, 99, 235, 0.1))"
+                    }}
+                  >
+                    <span className="block truncate font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                      {questionCount.name}
+                    </span>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <ChevronDown className="h-5 w-5 text-cyan-500" aria-hidden="true" />
+                    </span>
+                  </ListboxButton>
+                  <ListboxOptions className="absolute bottom-full mb-2 max-h-60 w-40 overflow-auto rounded-xl bg-white/95 backdrop-blur-md py-1 shadow-lg ring-1 ring-cyan-200 focus:outline-none z-10">
+                    {questionCounts.map((count) => (
+                      <ListboxOption
+                        key={count.id}
+                        className="relative cursor-pointer select-none py-2 pl-4 pr-4 data-[focus]:bg-gradient-to-r data-[focus]:from-cyan-50 data-[focus]:to-blue-50 data-[focus]:text-cyan-900 text-gray-900"
+                        value={count}
+                      >
+                        <span className="block truncate data-[selected]:font-semibold data-[selected]:text-cyan-600 font-normal">
+                          {count.name}
+                        </span>
+                      </ListboxOption>
+                    ))}
+                  </ListboxOptions>
+                </div>
+              </Listbox>
+
               {/* Grade Level Dropdown */}
               <Listbox value={gradeLevel} onChange={setGradeLevel}>
                 <div className="relative">
@@ -198,6 +256,13 @@ export default function HeroSection() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Sign Up Modal */}
+      <SignUpModal 
+        isOpen={showSignUpModal}
+        onClose={() => setShowSignUpModal(false)}
+        triggerAction="quiz"
+      />
     </div>
   )
 }
