@@ -6,12 +6,9 @@ import '@fontsource/poppins/400.css'
 import '@fontsource/poppins/500.css'
 import './index.css'
 import App from './App.tsx'
-import { SocketProvider } from './contexts/SocketContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <SocketProvider>
-      <App />
-    </SocketProvider>
+    <App />
   </StrictMode>,
 )

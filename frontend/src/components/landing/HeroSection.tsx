@@ -1,11 +1,28 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, ChevronDown } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
+
+const gradeLevels = [
+  { id: 'k', name: 'K' },
+  { id: '1', name: '1st Grade' },
+  { id: '2', name: '2nd Grade' },
+  { id: '3', name: '3rd Grade' },
+  { id: '4', name: '4th Grade' },
+  { id: '5', name: '5th Grade' },
+  { id: '6', name: '6th Grade' },
+  { id: '7', name: '7th Grade' },
+  { id: '8', name: '8th Grade' },
+  { id: '9', name: '9th Grade' },
+  { id: '10', name: '10th Grade' },
+  { id: '11', name: '11th Grade' },
+  { id: '12', name: '12th Grade' },
+]
 
 export default function HeroSection() {
   const [topic, setTopic] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [gradeLevel, setGradeLevel] = useState(gradeLevels[5]) // Default to 6th grade
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
@@ -22,8 +39,8 @@ export default function HeroSection() {
   const handleGenerateGame = () => {
     if (!topic.trim()) return
 
-    // Simple navigation to loading screen with topic
-    navigate('/loading', { state: { topic: topic.trim() } })
+    // Simple navigation to loading screen with topic and grade level
+    navigate('/loading', { state: { topic: topic.trim(), gradeLevel: gradeLevel.name } })
   }
 
   return (
@@ -121,28 +138,63 @@ export default function HeroSection() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="Enter a topic or paste your lesson text…"
-              className="w-full h-32 md:h-40 px-8 py-6 pr-16 text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
+              className="w-full h-32 md:h-40 px-8 py-6 pr-64 text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
               whileFocus={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             />
             
-            {/* Cyan gradient circle button */}
-            <motion.button
-              onClick={handleGenerateGame}
-              className="absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed opacity-60"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6, #06b6d4, #2563eb)"
-              }}
-              whileHover={{ 
-                scale: 1.1,
-                background: "linear-gradient(135deg, #1d4ed8, #22d3ee, #1e40af)"
-              }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-              disabled={!topic.trim()}
-            >
-              <ArrowUp className="w-6 h-6 text-white" />
-            </motion.button>
+            {/* Grade Level Dropdown and Submit Button */}
+            <div className="absolute bottom-3 right-3 flex items-center gap-2">
+              {/* Grade Level Dropdown */}
+              <Listbox value={gradeLevel} onChange={setGradeLevel}>
+                <div className="relative">
+                  <ListboxButton 
+                    className="relative w-36 cursor-pointer rounded-xl py-3 pl-4 pr-10 text-left shadow-md backdrop-blur-sm transition-all duration-200"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.15), rgba(37, 99, 235, 0.1))"
+                    }}
+                  >
+                    <span className="block truncate font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                      {gradeLevel.name}
+                    </span>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <ChevronDown className="h-5 w-5 text-cyan-500" aria-hidden="true" />
+                    </span>
+                  </ListboxButton>
+                  <ListboxOptions className="absolute bottom-full mb-2 max-h-60 w-36 overflow-auto rounded-xl bg-white/95 backdrop-blur-md py-1 shadow-lg ring-1 ring-cyan-200 focus:outline-none z-10">
+                    {gradeLevels.map((level) => (
+                      <ListboxOption
+                        key={level.id}
+                        className="relative cursor-pointer select-none py-2 pl-4 pr-4 data-[focus]:bg-gradient-to-r data-[focus]:from-cyan-50 data-[focus]:to-blue-50 data-[focus]:text-cyan-900 text-gray-900"
+                        value={level}
+                      >
+                        <span className="block truncate data-[selected]:font-semibold data-[selected]:text-cyan-600 font-normal">
+                          {level.name}
+                        </span>
+                      </ListboxOption>
+                    ))}
+                  </ListboxOptions>
+                </div>
+              </Listbox>
+
+              {/* Cyan gradient circle button */}
+              <motion.button
+                onClick={handleGenerateGame}
+                className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed opacity-60"
+                style={{
+                  background: "linear-gradient(135deg, #3b82f6, #06b6d4, #2563eb)"
+                }}
+                whileHover={{ 
+                  scale: 1.1,
+                  background: "linear-gradient(135deg, #1d4ed8, #22d3ee, #1e40af)"
+                }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                disabled={!topic.trim()}
+              >
+                <ArrowUp className="w-6 h-6 text-white" />
+              </motion.button>
+            </div>
           </div>
         </motion.div>
       </motion.div>
