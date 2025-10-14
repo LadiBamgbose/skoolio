@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar from './components/shared/Navbar'
 import Landing from './pages/Landing'
+import Loading from './pages/Loading'
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/loading" element={<Loading />} />
         </Routes>
       </div>
     </Router>
