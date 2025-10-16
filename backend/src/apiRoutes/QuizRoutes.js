@@ -154,7 +154,7 @@ router.get('/:shareLink', async (req, res) => {
     }
 
     // Return quiz without answers for students
-    const quizData = JSON.parse(quiz.questions);
+    const quizData = quiz.questions;
     const questionsWithoutAnswers = quizData.questions.map(q => ({
       question: q.question,
       options: q.options,
@@ -209,12 +209,18 @@ router.post('/:quizId/submit', async (req, res) => {
     }
 
     // Calculate score
-    const quizData = JSON.parse(quiz.questions);
+    const quizData = quiz.questions;
     let score = 0;
     const totalQuestions = quizData.questions.length;
 
     quizData.questions.forEach((q, index) => {
-      if (answers[index] === q.correctAnswer) {
+      const studentAnswer = answers[index.toString()];
+      const correctAnswerLetter = q.correctAnswer;
+      
+      // Extract the letter from student answer (e.g., "B) Cotton" -> "B")
+      const studentAnswerLetter = studentAnswer ? studentAnswer.split(')')[0] : null;
+      
+      if (studentAnswerLetter === correctAnswerLetter) {
         score++;
       }
     });

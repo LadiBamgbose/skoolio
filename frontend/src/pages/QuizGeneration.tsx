@@ -1,7 +1,8 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import QuizCard from '../components/quiz-generation/QuizCard'
+import ShareModal from '../components/quiz-generation/ShareModal'
 
 interface Question {
   question: string
@@ -36,6 +37,7 @@ export default function QuizGeneration() {
   const navigate = useNavigate()
   const quiz = location.state?.quiz
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   // Redirect if no quiz data
   if (!quiz) {
@@ -51,9 +53,7 @@ export default function QuizGeneration() {
   const scrollHeight = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
 
   const handleShare = () => {
-    const shareUrl = `${window.location.origin}/quiz/${quiz.shareLink}`
-    navigator.clipboard.writeText(shareUrl)
-    alert('Quiz link copied to clipboard!')
+    setShowShareModal(true)
   }
 
   return (
@@ -84,7 +84,7 @@ export default function QuizGeneration() {
           />
         </div>
 
-        {/* Share Button - Always Visible */}
+        {/* Share Button */}
         <motion.div
           className="flex justify-center py-6"
           initial={{ opacity: 0 }}
@@ -99,6 +99,13 @@ export default function QuizGeneration() {
           </button>
         </motion.div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        shareLink={quiz.shareLink}
+      />
     </div>
   )
 }
