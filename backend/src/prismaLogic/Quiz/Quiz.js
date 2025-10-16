@@ -1,16 +1,33 @@
 import prisma from "../../services/prisma.js";
-import { randomBytes } from 'crypto';
 
 class QuizLogic {
-  // Generate a unique share link
+  // Generate a unique 6-digit share code (like Kahoot)
   static generateShareLink() {
-    return randomBytes(8).toString('hex');
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
   // Create a new quiz
   static async createQuiz(prompt, questions, gradeLevel, questionCount, ipAddress) {
     try {
-      const shareLink = this.generateShareLink();
+      let shareLink = this.generateShareLink();
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      // Ensure unique shareLink (handle collision)
+      while (attempts < maxAttempts) {
+        const existing = await prisma.quiz.findUnique({
+          where: { shareLink }
+        });
+
+        if (!existing) break;
+        
+        shareLink = this.generateShareLink();
+        attempts++;
+      }
+
+      if (attempts >= maxAttempts) {
+        throw new Error('Failed to generate unique share code');
+      }
       
       return await prisma.quiz.create({
         data: {
