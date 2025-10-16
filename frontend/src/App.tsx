@@ -9,10 +9,11 @@ import TeacherDashboard from './pages/TeacherDashboard'
 function AppContent() {
   const location = useLocation()
   const isStudentQuiz = location.pathname.startsWith('/quiz/')
+  const isTeacherDashboard = location.pathname.startsWith('/teacher/')
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {!isStudentQuiz && <Navbar />}
+      {!isStudentQuiz && !isTeacherDashboard && <Navbar />}
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/loading" element={<Loading />} />
