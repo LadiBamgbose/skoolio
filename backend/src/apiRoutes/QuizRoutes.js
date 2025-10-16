@@ -1,9 +1,8 @@
 import express from 'express';
-import crypto from 'crypto';
 import OpenAIService from '../services/OpenAIService.js';
-import QuizLogic from '../prismaLogic/Quiz.js';
-import QuizResponseLogic from '../prismaLogic/QuizResponse.js';
-import QuizStatsLogic from '../prismaLogic/QuizStats.js';
+import QuizLogic from '../prismaLogic/Quiz/Quiz.js';
+import QuizResponseLogic from '../prismaLogic/Quiz/QuizResponse.js';
+import QuizStatsLogic from '../prismaLogic/Quiz/QuizStats.js';
 
 const router = express.Router();
 
@@ -14,11 +13,6 @@ const getClientIP = (req) => {
          req.socket.remoteAddress ||
          (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
          '127.0.0.1';
-};
-
-// Helper function to generate unique share link
-const generateShareLink = () => {
-  return crypto.randomBytes(8).toString('hex');
 };
 
 // POST /api/quiz/generate - Generate a quiz
@@ -63,8 +57,7 @@ router.post('/generate', async (req, res) => {
     // Prepare options for OpenAI
     const options = {
       questionCount,
-      difficulty: 'Medium', // Can be made dynamic later
-      educationLevel: gradeLevel
+      gradeLevel
     };
 
     // Generate quiz using OpenAI
@@ -72,21 +65,10 @@ router.post('/generate', async (req, res) => {
     console.log('Quiz options:', options);
     const quizData = await OpenAIService.generateQuizQuestions(prompt.trim(), options);
 
-    // Generate unique share link
-    let shareLink = generateShareLink();
-    let linkExists = await QuizLogic.getQuizByShareLink(shareLink);
-    
-    // Ensure unique share link
-    while (linkExists) {
-      shareLink = generateShareLink();
-      linkExists = await QuizLogic.getQuizByShareLink(shareLink);
-    }
-
-    // Save quiz to database
+    // Save quiz to database (shareLink is generated inside createQuiz)
     const savedQuiz = await QuizLogic.createQuiz(
       prompt.trim(),
       quizData,
-      shareLink,
       gradeLevel,
       questionCount,
       clientIP

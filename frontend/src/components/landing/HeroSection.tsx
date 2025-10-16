@@ -57,9 +57,22 @@ export default function HeroSection() {
   }
 
   const handleGenerateGame = () => {
-    if (!topic.trim()) return
+    // Clear previous errors
+    setError('')
 
-    // Simple navigation to loading screen with topic, grade level, and question count
+    // Validate: Check if topic is empty
+    if (!topic.trim()) {
+      setError('Please enter a topic or lesson text')
+      return
+    }
+
+    // Validate: Check if topic is > 500 characters
+    if (topic.trim().length > 500) {
+      setError('Topic must be less than 500 characters')
+      return
+    }
+
+    // Navigate to loading screen with validated data
     navigate('/loading', { 
       state: { 
         topic: topic.trim(), 
@@ -162,12 +175,23 @@ export default function HeroSection() {
           <div className="relative">
             <motion.textarea
               value={topic}
-              onChange={(e) => setTopic(e.target.value)}
+              onChange={(e) => {
+                setTopic(e.target.value)
+                // Clear error when user starts typing
+                if (error) setError('')
+              }}
               placeholder="Enter a topic or paste your lesson text…"
-              className="w-full h-32 md:h-40 px-8 py-6 pr-[450px] text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
+              className="w-full h-32 md:h-40 px-8 py-6 pr-[450px] pb-10 text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
               whileFocus={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             />
+            
+            {/* Character Count */}
+            <div className="absolute bottom-3 left-3">
+              <span className={`text-sm ${topic.length > 500 ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+                {topic.length}/500
+              </span>
+            </div>
             
             {/* Dropdowns and Submit Button */}
             <div className="absolute bottom-3 right-3 flex items-center gap-2">

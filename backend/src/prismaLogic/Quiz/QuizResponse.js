@@ -1,4 +1,4 @@
-import prisma from "../services/prisma.js";
+import prisma from "../../services/prisma.js";
 
 class QuizResponseLogic {
   // Submit a quiz response

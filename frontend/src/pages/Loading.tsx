@@ -1,6 +1,59 @@
 import { motion } from 'framer-motion'
+import { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import QuizService from '../services/quizService'
 
 export default function Loading() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const generateQuiz = async () => {
+      try {
+        // Get data from navigation state
+        const { topic, gradeLevel, questionCount } = location.state || {}
+
+        // Validate we have the required data
+        if (!topic || !gradeLevel || !questionCount) {
+          navigate('/', { 
+            state: { error: 'Missing quiz parameters. Please try again.' },
+            replace: true 
+          })
+          return
+        }
+
+        // Call backend to generate quiz
+        const response = await QuizService.generateQuiz(topic, gradeLevel, questionCount)
+
+        // Navigate to quiz generation page with the quiz data
+        navigate('/quiz-generation', { 
+          state: { quiz: response.quiz },
+          replace: true 
+        })
+
+      } catch (error: any) {
+        console.error('Quiz generation failed:', error)
+        
+        // Handle specific error cases
+        let errorMessage = 'Failed to generate quiz. Please try again.'
+        
+        if (error?.response?.data?.error) {
+          errorMessage = error.response.data.error
+        } else if (error?.message) {
+          errorMessage = error.message
+        }
+
+        // Navigate back to home with error
+        navigate('/', { 
+          state: { error: errorMessage },
+          replace: true 
+        })
+      }
+    }
+
+    generateQuiz()
+  }, [navigate, location.state])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-cyan-50 to-white flex items-center justify-center">
       <div className="text-center">
