@@ -11,17 +11,17 @@ export const generateQuizPrompt = {
   template: (params) => `Generate a ${params.questionCount || 5}-question multiple choice quiz about: "${params.topic}"
 
 Requirements:
-- Educational level: ${params.educationLevel || 'Middle/High school appropriate'}
+- This quiz is for ${params.gradeLevel || '6th Grade'} students - ensure all questions, vocabulary, and concepts are appropriate for this specific grade level
 - Each question should have exactly 4 options labeled A, B, C, D
 - Only one correct answer per question
 - Include a brief explanation for each correct answer
 - Make questions engaging and educational
-- Difficulty: ${params.difficulty || 'Medium'}
+- Adjust difficulty and complexity to match ${params.gradeLevel || '6th Grade'} curriculum standards
 
 Return ONLY a valid JSON object in this exact format:
 {
   "topic": "${params.topic}",
-  "difficulty": "${params.difficulty || 'Medium'}",
+  "gradeLevel": "${params.gradeLevel || '6th Grade'}",
   "questionCount": ${params.questionCount || 5},
   "questions": [
     {
@@ -32,7 +32,7 @@ Return ONLY a valid JSON object in this exact format:
         "C) Option 3",
         "D) Option 4"
       ],
-      "correct": "B",
+      "correctAnswer": "B",
       "explanation": "Brief explanation of why B is correct"
     }
   ]
@@ -48,7 +48,7 @@ Return ONLY a valid JSON object in this exact format:
   // Validation rules
   validation: {
     requiredFields: ['topic', 'questions'],
-    questionFields: ['question', 'options', 'correct', 'explanation'],
+    questionFields: ['question', 'options', 'correctAnswer', 'explanation'],
     optionsCount: 4,
     defaultQuestionCount: 7
   }

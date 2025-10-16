@@ -1,4 +1,4 @@
-import prisma from "../services/prisma.js";
+import prisma from "../../services/prisma.js";
 
 class QuizStatsLogic {
   // Create or update stats after a response is submitted

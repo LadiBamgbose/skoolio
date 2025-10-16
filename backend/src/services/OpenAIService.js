@@ -12,8 +12,7 @@ class OpenAIService {
       const promptParams = {
         topic,
         questionCount: options.questionCount || generateQuizPrompt.validation.defaultQuestionCount,
-        difficulty: options.difficulty || 'Medium',
-        educationLevel: options.educationLevel || 'Middle/High school appropriate'
+        gradeLevel: options.gradeLevel || '6th Grade'
       };
 
       // Generate prompt using template
