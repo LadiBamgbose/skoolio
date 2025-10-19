@@ -5,6 +5,7 @@ import {
   Bell,
   ChevronsUpDown,
   LogOut,
+  Settings,
 } from "lucide-react"
 
 import {
@@ -103,6 +104,10 @@ export function NavUser({
               <DropdownMenuItem>
                 <Bell />
                 Notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings />
+                Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

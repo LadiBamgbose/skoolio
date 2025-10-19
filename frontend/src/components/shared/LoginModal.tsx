@@ -1,22 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Mail, Lock, User, MapPin, Globe } from 'lucide-react'
+import { X, Mail, Lock } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { signUpSchema, type SignUpFormData } from '../../schemas/auth.schema'
+import { loginSchema, type LoginFormData } from '../../schemas/auth.schema'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
-interface SignUpModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  triggerAction?: string; // "quiz", "signup", or "demo-limit" to customize messaging
+interface LoginModalProps {
+  isOpen: boolean
+  onClose: () => void
 }
 
-export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpModalProps) {
+export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
-  const { register: registerUser } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   const { 
@@ -24,23 +23,21 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
     handleSubmit, 
     formState: { errors },
     reset
-  } = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema)
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema)
   })
 
-  const handleGoogleSignUp = () => {
+  const handleGoogleLogin = () => {
     // TODO: Implement Google OAuth
-    console.log('Google sign up')
+    console.log('Google login')
   }
 
-  const onSubmit = async (data: SignUpFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       setIsLoading(true)
       setApiError(null)
 
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...registrationData } = data
-      await registerUser(registrationData)
+      await login(data.email, data.password)
       
       // Success! Close modal and redirect to dashboard
       reset()
@@ -48,13 +45,13 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
       navigate('/teacher/dashboard')
       
     } catch (error: any) {
-      console.error('Registration error:', error)
+      console.error('Login error:', error)
       
       // Handle API errors
       if (error?.response?.data?.error) {
         setApiError(error.response.data.error)
       } else {
-        setApiError('Failed to create account. Please try again.')
+        setApiError('Failed to log in. Please try again.')
       }
     } finally {
       setIsLoading(false)
@@ -95,9 +92,7 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  {triggerAction === 'quiz' ? 'Start Creating Quizzes!' : 
-                   triggerAction === 'demo-limit' ? 'Demo Limit Reached!' : 
-                   'Join Skoolio'}
+                  Welcome Back
                 </motion.h2>
                 <motion.p 
                   className="text-gray-600"
@@ -105,18 +100,13 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  {triggerAction === 'quiz' 
-                    ? 'Create your account to generate unlimited quizzes'
-                    : triggerAction === 'demo-limit'
-                     ? "You've reached the free demo limit. Sign up to create unlimited quizzes and games!"
-                    : 'Transform your classroom with interactive quiz games'
-                  }
+                  Log in to continue creating amazing quizzes
                 </motion.p>
               </div>
             </div>
 
             <div className="px-8 pb-8">
-              {/* Google Sign Up */}
+              {/* Google Login */}
               <motion.button
                 className="w-full flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors mb-6"
                 initial={{ opacity: 0, y: 10 }}
@@ -124,7 +114,7 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                 transition={{ delay: 0.3 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={handleGoogleSignUp}
+                onClick={handleGoogleLogin}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -161,7 +151,7 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                 </motion.div>
               )}
 
-              {/* Email Form */}
+              {/* Login Form */}
               <motion.form 
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4"
@@ -169,42 +159,6 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                {/* Name Fields */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        placeholder="First name"
-                        {...register('firstName')}
-                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
-                          errors.firstName ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                    </div>
-                    {errors.firstName && (
-                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.firstName.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        placeholder="Last name"
-                        {...register('lastName')}
-                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
-                          errors.lastName ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                    </div>
-                    {errors.lastName && (
-                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.lastName.message}</p>
-                    )}
-                  </div>
-                </div>
-
                 {/* Email */}
                 <div>
                   <div className="relative">
@@ -229,7 +183,7 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="password"
-                      placeholder="Password (min 6 characters)"
+                      placeholder="Password"
                       {...register('password')}
                       className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
                         errors.password ? 'border-red-500' : 'border-gray-300'
@@ -239,60 +193,6 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                   {errors.password && (
                     <p className="text-red-500 text-xs mt-1 ml-1">{errors.password.message}</p>
                   )}
-                </div>
-
-                {/* Confirm Password */}
-                <div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="password"
-                      placeholder="Confirm password"
-                      {...register('confirmPassword')}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    />
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1 ml-1">{errors.confirmPassword.message}</p>
-                  )}
-                </div>
-
-                {/* Location Fields */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        placeholder="City"
-                        {...register('city')}
-                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
-                          errors.city ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                    </div>
-                    {errors.city && (
-                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.city.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <div className="relative">
-                      <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        placeholder="State"
-                        {...register('state')}
-                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
-                          errors.state ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                    </div>
-                    {errors.state && (
-                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.state.message}</p>
-                    )}
-                  </div>
                 </div>
 
                 {/* Submit Button */}
@@ -309,22 +209,21 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                   } : {}}
                   whileTap={!isLoading ? { scale: 0.98 } : {}}
                 >
-                  {isLoading ? 'Creating account...' : triggerAction === 'quiz' ? 'Create Account & Start Quiz' : 'Create Account'}
+                  {isLoading ? 'Logging in...' : 'Log In'}
                 </motion.button>
               </motion.form>
 
-              {/* Terms */}
-              <motion.p 
-                className="text-xs text-gray-500 text-center mt-4"
+              {/* Forgot Password */}
+              <motion.div
+                className="text-center mt-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                By signing up, you agree to our{' '}
-                <a href="#" className="text-cyan-600 hover:underline">Terms of Service</a>
-                {' '}and{' '}
-                <a href="#" className="text-cyan-600 hover:underline">Privacy Policy</a>
-              </motion.p>
+                <a href="#" className="text-sm text-cyan-600 hover:underline">
+                  Forgot password?
+                </a>
+              </motion.div>
             </div>
           </motion.div>
         </motion.div>
@@ -332,3 +231,4 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
     </AnimatePresence>
   )
 }
+

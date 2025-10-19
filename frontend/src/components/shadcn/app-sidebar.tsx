@@ -4,7 +4,6 @@ import {
   Users,
   GraduationCap,
   FileText,
-  Settings,
 } from "lucide-react"
 
 import { NavMain } from "@/components/shadcn/nav-main"
@@ -40,19 +39,16 @@ const data = {
       isActive: true,
     },
     {
-      title: "Students",
-      url: "/teacher/students",
-      icon: Users,
-    },
-    {
       title: "Quiz",
       url: "/teacher/quiz",
       icon: FileText,
     },
     {
-      title: "Settings",
-      url: "/teacher/settings",
-      icon: Settings,
+      title: "Students",
+      url: "#",
+      icon: Users,
+      disabled: true,
+      tooltip: "Coming soon",
     },
   ],
 }

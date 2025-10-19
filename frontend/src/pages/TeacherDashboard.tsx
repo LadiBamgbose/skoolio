@@ -10,6 +10,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/shadcn/sidebar"
+import StatsCard from "@/components/dashboard/StatsCard"
+import QuizTable from "@/components/dashboard/QuizTable"
 
 export default function TeacherDashboard() {
   return (
@@ -26,13 +28,29 @@ export default function TeacherDashboard() {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
+        <div className="flex flex-1 flex-col gap-6 p-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <StatsCard 
+              title="Total Quizzes"
+              value={24}
+              percentChange={12.5}
+            />
+            <StatsCard 
+              title="Active Quizzes"
+              value={18}
+              percentChange={8.3}
+            />
+            <StatsCard 
+              title="Inactive Quizzes"
+              value={6}
+              percentChange={-3.2}
+            />
           </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+          
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Quizzes</h2>
+            <QuizTable />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
