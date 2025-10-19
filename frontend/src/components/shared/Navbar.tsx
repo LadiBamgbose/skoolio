@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import skoolioLogo from '../../assets/Skoolio.png'
 import SignUpModal from './SignUpModal'
+import LoginModal from './LoginModal'
 
 export default function Navbar() {
   const navigate = useNavigate()
   const [showSignUpModal, setShowSignUpModal] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   return (
     <>
@@ -34,6 +36,7 @@ export default function Navbar() {
           className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-white/50 transition-colors duration-200"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => setShowLoginModal(true)}
         >
           Log In
         </motion.button>
@@ -59,6 +62,11 @@ export default function Navbar() {
       isOpen={showSignUpModal}
       onClose={() => setShowSignUpModal(false)}
       triggerAction="signup"
+    />
+    
+    <LoginModal 
+      isOpen={showLoginModal}
+      onClose={() => setShowLoginModal(false)}
     />
     </>
   )
