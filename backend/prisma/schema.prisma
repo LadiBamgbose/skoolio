@@ -13,6 +13,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User model - teachers who create quizzes
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  city        String
+  state       String
+  plan        Plan     @default(BASIC)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  quizzes     Quiz[]
+  quizUsage   QuizUsage[]
+}
+
+// Plan enum for different subscription tiers
+enum Plan {
+  BASIC     // 5 quizzes/month - Free
+  TEACHER   // 60 quizzes/month - $7.99
+  ADVANCED  // Unlimited - $12.99
+}
+
 // Quiz table - teachers generate quizzes
 model Quiz {
   id            Int             @id @default(autoincrement())
@@ -22,12 +46,19 @@ model Quiz {
   gradeLevel    String
   questionCount Int
   createdAt     DateTime        @default(now())
-  ipAddress     String          // Rate limit: 3 quiz creations/month per IP
+  
+  // Keep existing IP tracking for anonymous users (nullable for authenticated)
+  ipAddress     String?         // Nullable for authenticated users
+  
+  // Add teacher ownership (nullable for anonymous quizzes)
+  teacherId     Int?            // Nullable for anonymous quizzes
+  teacher       User?           @relation(fields: [teacherId], references: [id])
   
   responses     QuizResponse[]
   stats         QuizStats?
   
   @@index([ipAddress, createdAt])
+  @@index([teacherId, createdAt])
   @@index([shareLink])
 }
 
@@ -57,4 +88,18 @@ model QuizStats {
   lowestScore         Int?
   averageTimeSeconds  Float?
   lastUpdated         DateTime @updatedAt
+}
+
+// Quiz usage tracking - monthly limits for users and IPs
+model QuizUsage {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     // Nullable for anonymous users
+  ipAddress String?  // For anonymous tracking
+  month     String   // "2024-01" format
+  count     Int      @default(0)
+  
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  @@unique([userId, month])
+  @@unique([ipAddress, month])
 }

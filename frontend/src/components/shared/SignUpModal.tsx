@@ -1,6 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Mail, Lock, User, MapPin, Globe } from 'lucide-react'
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { signUpSchema, type SignUpFormData } from '../../schemas/auth.schema'
+import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -9,31 +14,49 @@ interface SignUpModalProps {
 }
 
 export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpModalProps) {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    city: '',
-    state: ''
-  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const { register: registerUser } = useAuth()
+  const navigate = useNavigate()
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  const { 
+    register, 
+    handleSubmit, 
+    formState: { errors },
+    reset
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema)
+  })
 
   const handleGoogleSignUp = () => {
     // TODO: Implement Google OAuth
     console.log('Google sign up')
   }
 
-  const handleEmailSignUp = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Implement email signup
-    console.log('Email signup:', formData)
+  const onSubmit = async (data: SignUpFormData) => {
+    try {
+      setIsLoading(true)
+      setApiError(null)
+
+      await registerUser(data)
+      
+      // Success! Close modal and redirect to dashboard
+      reset()
+      onClose()
+      navigate('/teacher/dashboard')
+      
+    } catch (error: any) {
+      console.error('Registration error:', error)
+      
+      // Handle API errors
+      if (error?.response?.data?.error) {
+        setApiError(error.response.data.error)
+      } else {
+        setApiError('Failed to create account. Please try again.')
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -125,9 +148,20 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                 </div>
               </motion.div>
 
+              {/* API Error Message */}
+              {apiError && (
+                <motion.div
+                  className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {apiError}
+                </motion.div>
+              )}
+
               {/* Email Form */}
               <motion.form 
-                onSubmit={handleEmailSignUp}
+                onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -135,102 +169,127 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
               >
                 {/* Name Fields */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      name="firstName"
-                      placeholder="First name"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                      required
-                    />
+                  <div>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="First name"
+                        {...register('firstName')}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
+                          errors.firstName ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                    </div>
+                    {errors.firstName && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.firstName.message}</p>
+                    )}
                   </div>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      name="lastName"
-                      placeholder="Last name"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                      required
-                    />
+                  <div>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Last name"
+                        {...register('lastName')}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
+                          errors.lastName ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                    </div>
+                    {errors.lastName && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.lastName.message}</p>
+                    )}
                   </div>
                 </div>
 
                 {/* Email */}
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email address"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                    required
-                  />
+                <div>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      {...register('email')}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>
+                  )}
                 </div>
 
                 {/* Password */}
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                    required
-                  />
+                <div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="password"
+                      placeholder="Password (min 6 characters)"
+                      {...register('password')}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
+                        errors.password ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1 ml-1">{errors.password.message}</p>
+                  )}
                 </div>
 
                 {/* Location Fields */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      name="city"
-                      placeholder="City"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                      required
-                    />
+                  <div>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="City"
+                        {...register('city')}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
+                          errors.city ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                    </div>
+                    {errors.city && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.city.message}</p>
+                    )}
                   </div>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      name="state"
-                      placeholder="State"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                      required
-                    />
+                  <div>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="State"
+                        {...register('state')}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${
+                          errors.state ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                    </div>
+                    {errors.state && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">{errors.state.message}</p>
+                    )}
                   </div>
                 </div>
 
                 {/* Submit Button */}
                 <motion.button
                   type="submit"
-                  className="w-full py-4 text-white rounded-xl font-medium shadow-lg opacity-60 mt-6"
+                  disabled={isLoading}
+                  className="w-full py-4 text-white rounded-xl font-medium shadow-lg opacity-60 mt-6 disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
                     background: "linear-gradient(135deg, #3b82f6, #06b6d4, #2563eb)"
                   }}
-                  whileHover={{ 
+                  whileHover={!isLoading ? { 
                     scale: 1.02,
                     background: "linear-gradient(135deg, #1d4ed8, #22d3ee, #1e40af)"
-                  }}
-                  whileTap={{ scale: 0.98 }}
+                  } : {}}
+                  whileTap={!isLoading ? { scale: 0.98 } : {}}
                 >
-                  {triggerAction === 'quiz' ? 'Create Account & Start Quiz' : 'Create Account'}
+                  {isLoading ? 'Creating account...' : triggerAction === 'quiz' ? 'Create Account & Start Quiz' : 'Create Account'}
                 </motion.button>
               </motion.form>
 
