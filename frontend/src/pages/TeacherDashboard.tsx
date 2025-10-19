@@ -1,15 +1,15 @@
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/shadcn/app-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb"
+} from "@/components/shadcn/breadcrumb"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/shadcn/sidebar"
 
 export default function TeacherDashboard() {
   return (

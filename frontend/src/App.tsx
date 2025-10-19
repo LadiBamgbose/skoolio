@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 import Navbar from './components/shared/Navbar'
 import Landing from './pages/Landing'
 import Loading from './pages/Loading'
@@ -19,7 +21,14 @@ function AppContent() {
           <Route path="/loading" element={<Loading />} />
           <Route path="/quiz-generation" element={<QuizGeneration />} />
           <Route path="/quiz/:shareLink" element={<StudentQuiz />} />
-          <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+          <Route 
+            path="/teacher/dashboard" 
+            element={
+              <ProtectedRoute>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
     </div>
   )
@@ -28,7 +37,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   )
 }

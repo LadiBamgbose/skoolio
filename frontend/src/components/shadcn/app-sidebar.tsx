@@ -7,16 +7,16 @@ import {
   Settings,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/shadcn/nav-main"
+import { NavUser } from "@/components/shadcn/nav-user"
+import { TeamSwitcher } from "@/components/shadcn/team-switcher"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/shadcn/sidebar"
 
 // Teacher Dashboard data
 const data = {

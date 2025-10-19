@@ -42,7 +42,7 @@ Return ONLY a valid JSON object in this exact format:
   config: {
     model: "gpt-4o-mini", // Cost-effective model
     temperature: 0.7,
-    max_tokens: 2000,
+    max_tokens: 6000,
   },
 
   // Validation rules
