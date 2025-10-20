@@ -109,6 +109,65 @@ class QuizLogic {
       throw error;
     }
   }
+
+  // Toggle quiz active status
+  static async toggleQuizActive(quizId, teacherId) {
+    try {
+      // First, verify the quiz belongs to the teacher
+      const quiz = await prisma.quiz.findUnique({
+        where: { id: quizId }
+      });
+
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+
+      if (quiz.teacherId !== teacherId) {
+        throw new Error('Unauthorized: You do not own this quiz');
+      }
+
+      // Toggle the isActive status
+      return await prisma.quiz.update({
+        where: { id: quizId },
+        data: { isActive: !quiz.isActive }
+      });
+    } catch (error) {
+      console.error('Error toggling quiz active status:', error);
+      throw error;
+    }
+  }
+
+  // Get teacher quiz stats (total, active, inactive counts)
+  static async getTeacherStats(teacherId) {
+    try {
+      const totalQuizzes = await prisma.quiz.count({
+        where: { teacherId }
+      });
+
+      const activeQuizzes = await prisma.quiz.count({
+        where: { 
+          teacherId,
+          isActive: true 
+        }
+      });
+
+      const inactiveQuizzes = await prisma.quiz.count({
+        where: { 
+          teacherId,
+          isActive: false 
+        }
+      });
+
+      return {
+        totalQuizzes,
+        activeQuizzes,
+        inactiveQuizzes
+      };
+    } catch (error) {
+      console.error('Error getting teacher stats:', error);
+      throw error;
+    }
+  }
 }
 
 export default QuizLogic;

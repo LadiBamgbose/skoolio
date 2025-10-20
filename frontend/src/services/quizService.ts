@@ -1,49 +1,5 @@
 import ApiHandler from '../utils/ApiHandler';
-
-interface Question {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-}
-
-interface GenerateQuizResponse {
-  success: boolean;
-  quiz: {
-    id: number;
-    topic: string;
-    questions: Question[];
-    shareLink: string;
-    gradeLevel: string;
-    createdAt: string;
-  };
-}
-
-interface GetQuizResponse {
-  success: boolean;
-  quiz: {
-    id: number;
-    topic: string;
-    questions: {
-      question: string;
-      options: string[];
-      type?: string;
-    }[];
-    gradeLevel: string;
-    totalQuestions: number;
-  };
-}
-
-interface SubmitQuizResponse {
-  success: boolean;
-  response: {
-    id: number;
-    score: number;
-    totalQuestions: number;
-    percentage: number;
-    completedAt: string;
-  };
-}
+import type { QuizTypes } from '../types/quiz.types';
 
 class QuizService {
   
@@ -52,7 +8,7 @@ class QuizService {
     prompt: string, 
     gradeLevel: string, 
     questionCount: number
-  ): Promise<GenerateQuizResponse> {
+  ): Promise<QuizTypes.GenerateQuizResponse> {
     try {
       const payload: any = {
         prompt: prompt.trim(),
@@ -75,7 +31,7 @@ class QuizService {
   }
 
   // Get quiz by share link (for students)
-  static async getQuizByShareLink(shareLink: string): Promise<GetQuizResponse> {
+  static async getQuizByShareLink(shareLink: string): Promise<QuizTypes.GetQuizResponse> {
     try {
       const response: any = await ApiHandler.get(`/quiz/${shareLink}`);
       return response;
@@ -91,7 +47,7 @@ class QuizService {
     studentName: string,
     answers: { [key: number]: string },
     timeTaken?: number
-  ): Promise<SubmitQuizResponse> {
+  ): Promise<QuizTypes.SubmitQuizResponse> {
     try {
       const payload = {
         studentName,
@@ -106,7 +62,17 @@ class QuizService {
       throw error;
     }
   }
+
+  // Get teacher's quiz statistics (protected - requires auth)
+  static async getTeacherStats(): Promise<QuizTypes.TeacherStatsResponse> {
+    try {
+      const response: any = await ApiHandler.get('/quiz/teacher/stats');
+      return response;
+    } catch (error) {
+      console.error('Error fetching teacher stats:', error);
+      throw error;
+    }
+  }
 }
 
 export default QuizService;
-

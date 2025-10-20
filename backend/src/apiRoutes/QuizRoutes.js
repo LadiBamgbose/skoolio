@@ -3,6 +3,7 @@ import OpenAIService from '../services/OpenAIService.js';
 import QuizLogic from '../prismaLogic/Quiz/Quiz.js';
 import QuizResponseLogic from '../prismaLogic/Quiz/QuizResponse.js';
 import QuizStatsLogic from '../prismaLogic/Quiz/QuizStats.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -14,6 +15,10 @@ const getClientIP = (req) => {
          (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
          '127.0.0.1';
 };
+
+// ============================================
+// SPECIFIC LITERAL ROUTES (MOST SPECIFIC FIRST)
+// ============================================
 
 // POST /api/quiz/generate - Generate a quiz
 router.post('/generate', async (req, res) => {
@@ -140,42 +145,70 @@ router.get('/status', async (req, res) => {
   }
 });
 
-// GET /api/quiz/:shareLink - Get quiz by share link (for students)
-router.get('/:shareLink', async (req, res) => {
+// GET /api/quiz/teacher/stats - Get teacher's quiz statistics (protected)
+router.get('/teacher/stats', authMiddleware, async (req, res) => {
   try {
-    const { shareLink } = req.params;
+    const teacherId = req.user.userId; // From auth middleware
 
-    const quiz = await QuizLogic.getQuizByShareLink(shareLink);
-
-    if (!quiz) {
-      return res.status(404).json({
-        error: 'Quiz not found'
-      });
-    }
-
-    // Return quiz without answers for students
-    const quizData = quiz.questions;
-    const questionsWithoutAnswers = quizData.questions.map(q => ({
-      question: q.question,
-      options: q.options,
-      type: q.type
-    }));
+    const stats = await QuizLogic.getTeacherStats(teacherId);
 
     res.status(200).json({
       success: true,
-      quiz: {
-        id: quiz.id,
-        topic: quizData.topic,
-        questions: questionsWithoutAnswers,
-        gradeLevel: quiz.gradeLevel,
-        totalQuestions: quiz.questionCount
-      }
+      stats
     });
 
   } catch (error) {
-    console.error('Error fetching quiz:', error);
+    console.error('Error fetching teacher stats:', error);
     res.status(500).json({
-      error: 'Failed to fetch quiz'
+      error: 'Failed to fetch teacher statistics'
+    });
+  }
+});
+
+// ============================================
+// PARAMETERIZED ROUTES WITH SPECIFIC SUFFIXES
+// ============================================
+
+// GET /api/quiz/:quizId/stats - Get quiz statistics (for teachers)
+router.get('/:quizId/stats', async (req, res) => {
+  try {
+    const { quizId } = req.params;
+
+    const stats = await QuizStatsLogic.getStatsByQuizId(parseInt(quizId));
+
+    if (!stats) {
+      return res.status(404).json({
+        error: 'Quiz stats not found'
+      });
+    }
+
+    // Get all responses for detailed view
+    const responses = await QuizResponseLogic.getResponsesByQuizId(parseInt(quizId));
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalResponses: stats.totalResponses,
+        averageScore: stats.averageScore,
+        highestScore: stats.highestScore,
+        lowestScore: stats.lowestScore,
+        averageTimeSeconds: stats.averageTimeSeconds,
+        lastUpdated: stats.lastUpdated
+      },
+      responses: responses.map(r => ({
+        studentName: r.studentName,
+        score: r.score,
+        totalQuestions: r.totalQuestions,
+        percentage: Math.round((r.score / r.totalQuestions) * 100),
+        completedAt: r.completedAt,
+        timeTaken: r.timeTaken
+      }))
+    });
+
+  } catch (error) {
+    console.error('Error fetching quiz stats:', error);
+    res.status(500).json({
+      error: 'Failed to fetch quiz stats'
     });
   }
 });
@@ -257,46 +290,94 @@ router.post('/:quizId/submit', async (req, res) => {
   }
 });
 
-// GET /api/quiz/:quizId/stats - Get quiz statistics (for teachers)
-router.get('/:quizId/stats', async (req, res) => {
+// PATCH /api/quiz/:quizId/toggle-active - Toggle quiz active status (for teachers)
+router.patch('/:quizId/toggle-active', authMiddleware, async (req, res) => {
   try {
     const { quizId } = req.params;
+    const teacherId = req.user.userId; // From auth middleware
 
-    const stats = await QuizStatsLogic.getStatsByQuizId(parseInt(quizId));
-
-    if (!stats) {
-      return res.status(404).json({
-        error: 'Quiz stats not found'
-      });
-    }
-
-    // Get all responses for detailed view
-    const responses = await QuizResponseLogic.getResponsesByQuizId(parseInt(quizId));
+    const updatedQuiz = await QuizLogic.toggleQuizActive(parseInt(quizId), teacherId);
 
     res.status(200).json({
       success: true,
-      stats: {
-        totalResponses: stats.totalResponses,
-        averageScore: stats.averageScore,
-        highestScore: stats.highestScore,
-        lowestScore: stats.lowestScore,
-        averageTimeSeconds: stats.averageTimeSeconds,
-        lastUpdated: stats.lastUpdated
-      },
-      responses: responses.map(r => ({
-        studentName: r.studentName,
-        score: r.score,
-        totalQuestions: r.totalQuestions,
-        percentage: Math.round((r.score / r.totalQuestions) * 100),
-        completedAt: r.completedAt,
-        timeTaken: r.timeTaken
-      }))
+      message: `Quiz ${updatedQuiz.isActive ? 'activated' : 'deactivated'} successfully`,
+      quiz: {
+        id: updatedQuiz.id,
+        isActive: updatedQuiz.isActive,
+        shareLink: updatedQuiz.shareLink
+      }
     });
 
   } catch (error) {
-    console.error('Error fetching quiz stats:', error);
+    console.error('Error toggling quiz active status:', error);
+
+    if (error.message === 'Quiz not found') {
+      return res.status(404).json({
+        error: 'Quiz not found'
+      });
+    }
+
+    if (error.message.includes('Unauthorized')) {
+      return res.status(403).json({
+        error: error.message
+      });
+    }
+
     res.status(500).json({
-      error: 'Failed to fetch quiz stats'
+      error: 'Failed to toggle quiz status'
+    });
+  }
+});
+
+// ============================================
+// MOST GENERIC ROUTES (LAST - CATCH-ALL)
+// ============================================
+
+// GET /api/quiz/:shareLink - Get quiz by share link (for students)
+// MUST BE LAST among GET routes as it's most generic
+router.get('/:shareLink', async (req, res) => {
+  try {
+    const { shareLink } = req.params;
+
+    const quiz = await QuizLogic.getQuizByShareLink(shareLink);
+
+    if (!quiz) {
+      return res.status(404).json({
+        error: 'Quiz not found'
+      });
+    }
+
+    // Check if quiz is active
+    if (!quiz.isActive) {
+      return res.status(403).json({
+        error: 'This quiz is closed',
+        isActive: false
+      });
+    }
+
+    // Return quiz without answers for students
+    const quizData = quiz.questions;
+    const questionsWithoutAnswers = quizData.questions.map(q => ({
+      question: q.question,
+      options: q.options,
+      type: q.type
+    }));
+
+    res.status(200).json({
+      success: true,
+      quiz: {
+        id: quiz.id,
+        topic: quizData.topic,
+        questions: questionsWithoutAnswers,
+        gradeLevel: quiz.gradeLevel,
+        totalQuestions: quiz.questionCount
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching quiz:', error);
+    res.status(500).json({
+      error: 'Failed to fetch quiz'
     });
   }
 });

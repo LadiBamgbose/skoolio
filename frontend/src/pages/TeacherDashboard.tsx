@@ -1,58 +1,46 @@
-import { AppSidebar } from "@/components/shadcn/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/shadcn/breadcrumb"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/shadcn/sidebar"
-import StatsCard from "@/components/dashboard/StatsCard"
-import QuizTable from "@/components/dashboard/QuizTable"
+import StatsCard from "@/components/TeacherDashboard/StatsCard"
+import QuizTable from "@/components/TeacherDashboard/QuizTable"
+import { useTeacherStats } from "@/hooks/useQuiz.hook"
+import { Skeleton } from "@/components/shadcn/skeleton"
 
 export default function TeacherDashboard() {
+  const { data, isLoading, error } = useTeacherStats()
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Dashboard</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-4">
-          <div className="grid gap-4 md:grid-cols-3">
+    <>
+      <div className="grid gap-4 md:grid-cols-3">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-40 rounded-2xl" />
+            <Skeleton className="h-40 rounded-2xl" />
+            <Skeleton className="h-40 rounded-2xl" />
+          </>
+        ) : error ? (
+          <div className="col-span-3 text-center text-red-600">
+            Failed to load statistics. Please try again.
+          </div>
+        ) : (
+          <>
             <StatsCard 
               title="Total Quizzes"
-              value={24}
-              percentChange={12.5}
+              value={data?.stats.totalQuizzes || 0}
             />
             <StatsCard 
               title="Active Quizzes"
-              value={18}
-              percentChange={8.3}
+              value={data?.stats.activeQuizzes || 0}
             />
             <StatsCard 
               title="Inactive Quizzes"
-              value={6}
-              percentChange={-3.2}
+              value={data?.stats.inactiveQuizzes || 0}
             />
-          </div>
-          
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Quizzes</h2>
-            <QuizTable />
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+          </>
+        )}
+      </div>
+      
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Quizzes</h2>
+        <QuizTable />
+      </div>
+    </>
   )
 }
