@@ -45,6 +45,7 @@ model Quiz {
   shareLink     String          @unique  // For students to access
   gradeLevel    String
   questionCount Int
+  isActive      Boolean         @default(true)  // Controls if students can access quiz
   createdAt     DateTime        @default(now())
   
   // Keep existing IP tracking for anonymous users (nullable for authenticated)

@@ -7,6 +7,7 @@ import Loading from './pages/Loading'
 import QuizGeneration from './pages/QuizGeneration'
 import StudentQuiz from './pages/StudentQuiz'
 import TeacherDashboard from './pages/TeacherDashboard'
+import DashboardLayout from './layouts/DashboardLayout'
 
 function AppContent() {
   const location = useLocation()
@@ -21,14 +22,19 @@ function AppContent() {
           <Route path="/loading" element={<Loading />} />
           <Route path="/quiz-generation" element={<QuizGeneration />} />
           <Route path="/quiz/:shareLink" element={<StudentQuiz />} />
+          
+          {/* Teacher routes with shared layout */}
           <Route 
-            path="/teacher/dashboard" 
+            path="/teacher" 
             element={
               <ProtectedRoute>
-                <TeacherDashboard />
+                <DashboardLayout />
               </ProtectedRoute>
-            } 
-          />
+            }
+          >
+            <Route path="dashboard" element={<TeacherDashboard />} />
+            {/* Future routes like /teacher/quizzes, /teacher/settings go here */}
+          </Route>
         </Routes>
     </div>
   )
