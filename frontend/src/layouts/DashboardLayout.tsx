@@ -1,38 +1,28 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { AppSidebar } from "@/components/shadcn/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/shadcn/breadcrumb"
+import QuizCreationSidebar from "@/components/quizCreation/QuizCreationSidebar"
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/shadcn/sidebar"
 
 export default function DashboardLayout() {
+  const location = useLocation()
+  const isQuizPage = location.pathname === '/teacher/quiz'
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Dashboard</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-4">
+    <div className="h-screen overflow-hidden">
+      <SidebarProvider>
+        <AppSidebar />
+        {/* Conditionally render Quiz Creation Sidebar */}
+        {isQuizPage && <QuizCreationSidebar />}
+        <SidebarInset className="p-0 overflow-hidden">
           {/* This is where child routes will render */}
           <Outlet />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   )
 }
+
 

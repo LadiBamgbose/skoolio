@@ -7,7 +7,7 @@ export default function TeacherDashboard() {
   const { data, isLoading, error } = useTeacherStats()
 
   return (
-    <>
+    <div className="p-8 space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         {isLoading ? (
           <>
@@ -41,6 +41,6 @@ export default function TeacherDashboard() {
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Quizzes</h2>
         <QuizTable />
       </div>
-    </>
+    </div>
   )
 }

@@ -7,6 +7,7 @@ import Loading from './pages/Loading'
 import QuizGeneration from './pages/QuizGeneration'
 import StudentQuiz from './pages/StudentQuiz'
 import TeacherDashboard from './pages/TeacherDashboard'
+import QuizCreation from './pages/QuizCreation'
 import DashboardLayout from './layouts/DashboardLayout'
 
 function AppContent() {
@@ -15,7 +16,7 @@ function AppContent() {
   const isTeacherDashboard = location.pathname.startsWith('/teacher/')
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className={isTeacherDashboard ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden"}>
       {!isStudentQuiz && !isTeacherDashboard && <Navbar />}
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -33,6 +34,7 @@ function AppContent() {
             }
           >
             <Route path="dashboard" element={<TeacherDashboard />} />
+            <Route path="quiz" element={<QuizCreation />} />
             {/* Future routes like /teacher/quizzes, /teacher/settings go here */}
           </Route>
         </Routes>

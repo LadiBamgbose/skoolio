@@ -165,6 +165,54 @@ router.get('/teacher/stats', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/quiz/teacher/quizzes - Get teacher's quizzes with pagination (protected)
+router.get('/teacher/quizzes', authMiddleware, async (req, res) => {
+  try {
+    const teacherId = req.user.userId; // From auth middleware
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Validate pagination params
+    if (page < 1 || limit < 1 || limit > 100) {
+      return res.status(400).json({
+        error: 'Invalid pagination parameters'
+      });
+    }
+
+    const result = await QuizLogic.getQuizzesByTeacher(teacherId, page, limit);
+
+    // Format response: extract topic from questions JSON
+    const formattedQuizzes = result.quizzes.map(quiz => {
+      const questionsData = quiz.questions;
+      const topic = questionsData.topic || 'Untitled Quiz';
+
+      return {
+        id: quiz.id,
+        shareLink: quiz.shareLink,
+        topic,
+        gradeLevel: quiz.gradeLevel,
+        questionCount: quiz.questionCount,
+        totalResponses: quiz.stats?.totalResponses || 0,
+        averageScore: quiz.stats?.averageScore || null,
+        isActive: quiz.isActive,
+        createdAt: quiz.createdAt
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      quizzes: formattedQuizzes,
+      pagination: result.pagination
+    });
+
+  } catch (error) {
+    console.error('Error fetching teacher quizzes:', error);
+    res.status(500).json({
+      error: 'Failed to fetch quizzes'
+    });
+  }
+});
+
 // ============================================
 // PARAMETERIZED ROUTES WITH SPECIFIC SUFFIXES
 // ============================================

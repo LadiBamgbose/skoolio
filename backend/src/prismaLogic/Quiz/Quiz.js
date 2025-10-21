@@ -168,6 +168,44 @@ class QuizLogic {
       throw error;
     }
   }
+
+  // Get paginated list of teacher's quizzes with stats
+  static async getQuizzesByTeacher(teacherId, page = 1, limit = 10) {
+    try {
+      const skip = (page - 1) * limit;
+
+      // Get total count for pagination
+      const total = await prisma.quiz.count({
+        where: { teacherId }
+      });
+
+      // Get paginated quizzes with stats
+      const quizzes = await prisma.quiz.findMany({
+        where: { teacherId },
+        include: {
+          stats: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take: limit
+      });
+
+      return {
+        quizzes,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      console.error('Error getting teacher quizzes:', error);
+      throw error;
+    }
+  }
 }
 
 export default QuizLogic;
