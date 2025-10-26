@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Copy, Check } from 'lucide-react'
+import { X, Copy, Check, LayoutDashboard } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface ShareModalProps {
   isOpen: boolean
@@ -10,6 +11,7 @@ interface ShareModalProps {
 
 export default function ShareModal({ isOpen, onClose, shareLink }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
+  const { user } = useAuth()
   const quizUrl = `skoolio.us/quiz/${shareLink}`
 
   const handleCopy = () => {
@@ -98,6 +100,30 @@ export default function ShareModal({ isOpen, onClose, shareLink }: ShareModalPro
                     </>
                   )}
                 </button>
+
+                {/* Dashboard Message for Logged-in Users */}
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="mt-6 p-4 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center">
+                        <LayoutDashboard className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-800 mb-1">
+                          Quiz Saved!
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          You can view and manage all your quizzes in your Dashboard
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 <p className="text-xs text-gray-500 mt-4">
                   Students can visit this link to take the quiz

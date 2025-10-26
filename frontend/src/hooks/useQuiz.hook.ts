@@ -12,4 +12,14 @@ export const useTeacherStats = () => {
   });
 };
 
+// Hook to fetch teacher's quizzes with pagination
+export const useTeacherQuizzes = (page: number = 1, limit: number = 10) => {
+  return useQuery<QuizTypes.TeacherQuizzesResponse, Error>({
+    queryKey: ['teacherQuizzes', page, limit],
+    queryFn: () => QuizService.getTeacherQuizzes(page, limit),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchOnWindowFocus: true,
+  });
+};
+
 

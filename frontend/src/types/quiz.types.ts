@@ -58,6 +58,31 @@ export namespace QuizTypes {
     success: boolean;
     stats: TeacherStats;
   }
+
+  export interface TeacherQuiz {
+    id: number;
+    shareLink: string;
+    topic: string;
+    gradeLevel: string;
+    questionCount: number;
+    totalResponses: number;
+    averageScore: number | null;
+    isActive: boolean;
+    createdAt: string;
+  }
+
+  export interface Pagination {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  }
+
+  export interface TeacherQuizzesResponse {
+    success: boolean;
+    quizzes: TeacherQuiz[];
+    pagination: Pagination;
+  }
 }
 
 
