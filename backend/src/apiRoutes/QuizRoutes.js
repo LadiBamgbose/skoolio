@@ -4,6 +4,7 @@ import QuizLogic from '../prismaLogic/Quiz/Quiz.js';
 import QuizResponseLogic from '../prismaLogic/Quiz/QuizResponse.js';
 import QuizStatsLogic from '../prismaLogic/Quiz/QuizStats.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { optionalAuthMiddleware } from '../middleware/optionalAuthMiddleware.js';
 
 const router = express.Router();
 
@@ -20,10 +21,12 @@ const getClientIP = (req) => {
 // SPECIFIC LITERAL ROUTES (MOST SPECIFIC FIRST)
 // ============================================
 
-// POST /api/quiz/generate - Generate a quiz
-router.post('/generate', async (req, res) => {
+// POST /api/quiz/generate - Generate a quiz (optionally authenticated)
+router.post('/generate', optionalAuthMiddleware, async (req, res) => {
   try {
     const { prompt, gradeLevel, questionCount, adminKey } = req.body;
+    const isAuthenticated = !!req.user;
+    const teacherId = isAuthenticated ? req.user.userId : null;
 
     // Validate input
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
@@ -44,18 +47,46 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    // Get client IP for rate limiting
+    // Get client IP
     const clientIP = getClientIP(req);
     
-    // Check rate limit: 3 quizzes per month per IP (skip if admin key provided)
+    // Rate limiting logic
     if (!adminKey || adminKey !== 'skoolio_dev_2024') {
-      const recentQuizCount = await QuizLogic.countRecentQuizzesByIP(clientIP);
-      
-      if (recentQuizCount >= 3) {
-        return res.status(429).json({
-          error: 'Free plan limit reached. You can create 3 quizzes per month. Upgrade to Teacher plan for unlimited quizzes!',
-          rateLimitReached: true
-        });
+      if (isAuthenticated) {
+        // For authenticated users: check by teacherId and plan
+        const recentQuizCount = await QuizLogic.countRecentQuizzesByTeacher(teacherId);
+        const userPlan = req.user.plan;
+        
+        // Plan limits: BASIC = 5, TEACHER = 60, ADVANCED = unlimited
+        let limit = 5;
+        if (userPlan === 'TEACHER') limit = 60;
+        if (userPlan === 'ADVANCED') limit = Infinity;
+        
+        if (recentQuizCount >= limit) {
+          return res.status(429).json({
+            error: `${userPlan} plan limit reached. You can create ${limit} quizzes per month.`,
+            rateLimitReached: true,
+            currentPlan: userPlan,
+            limit,
+            used: recentQuizCount
+          });
+        }
+        
+        console.log(`Authenticated - Teacher ID: ${teacherId}, Plan: ${userPlan}, Used: ${recentQuizCount}/${limit}`);
+      } else {
+        // For anonymous users: check by IP (3 per month)
+        const recentQuizCount = await QuizLogic.countRecentQuizzesByIP(clientIP);
+        
+        if (recentQuizCount >= 3) {
+          return res.status(429).json({
+            error: 'Free plan limit reached. You can create 3 quizzes per month. Sign up for more!',
+            rateLimitReached: true,
+            limit: 3,
+            used: recentQuizCount
+          });
+        }
+        
+        console.log(`Anonymous - IP: ${clientIP}, Used: ${recentQuizCount}/3`);
       }
     }
 
@@ -66,17 +97,17 @@ router.post('/generate', async (req, res) => {
     };
 
     // Generate quiz using OpenAI
-    console.log(`Generating quiz for prompt: "${prompt.trim()}" from IP: ${clientIP}`);
-    console.log('Quiz options:', options);
+    console.log(`Generating quiz for prompt: "${prompt.trim()}"`);
     const quizData = await OpenAIService.generateQuizQuestions(prompt.trim(), options);
 
-    // Save quiz to database (shareLink is generated inside createQuiz)
+    // Save quiz to database (with optional teacherId)
     const savedQuiz = await QuizLogic.createQuiz(
       prompt.trim(),
       quizData,
       gradeLevel,
       questionCount,
-      clientIP
+      clientIP,
+      teacherId
     );
 
     // Return quiz data with share link

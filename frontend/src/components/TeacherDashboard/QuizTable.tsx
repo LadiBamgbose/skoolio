@@ -22,79 +22,103 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu"
 import { Button } from "@/components/shadcn/button"
-
-interface Quiz {
-  id: string
-  topic: string
-  totalResponses: number
-  averageScore: number
-  status: 'Active' | 'Inactive'
-}
-
-// Dummy data
-const initialQuizzes: Quiz[] = [
-  { id: "QZ-001", topic: "Math: Algebra Basics", totalResponses: 45, averageScore: 78.5, status: "Active" },
-  { id: "QZ-002", topic: "Science: Photosynthesis", totalResponses: 32, averageScore: 85.2, status: "Active" },
-  { id: "QZ-003", topic: "History: World War II", totalResponses: 28, averageScore: 72.8, status: "Inactive" },
-  { id: "QZ-004", topic: "English: Shakespeare", totalResponses: 51, averageScore: 88.3, status: "Active" },
-  { id: "QZ-005", topic: "Geography: Continents", totalResponses: 19, averageScore: 65.4, status: "Inactive" },
-]
+import { Skeleton } from "@/components/shadcn/skeleton"
+import { useTeacherQuizzes } from "@/hooks/useQuiz.hook"
 
 export default function QuizTable() {
-  const [quizzes, setQuizzes] = useState<Quiz[]>(initialQuizzes)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
-  const totalPages = Math.ceil(quizzes.length / pageSize)
-  const startIndex = (currentPage - 1) * pageSize
-  const endIndex = startIndex + pageSize
-  const currentQuizzes = quizzes.slice(startIndex, endIndex)
+  const { data, isLoading, error } = useTeacherQuizzes(currentPage, pageSize)
 
-  const handleDelete = (quizId: string) => {
+  const quizzes = data?.quizzes || []
+  const pagination = data?.pagination
+  const totalPages = pagination?.totalPages || 1
+
+  const handleDelete = (quizId: number) => {
     console.log('Delete quiz:', quizId)
     // TODO: Implement delete functionality
   }
 
-  const toggleStatus = (quizId: string) => {
-    setQuizzes(prevQuizzes =>
-      prevQuizzes.map(quiz =>
-        quiz.id === quizId
-          ? { ...quiz, status: quiz.status === 'Active' ? 'Inactive' : 'Active' }
-          : quiz
-      )
+  const toggleStatus = (quizId: number) => {
+    console.log('Toggle status for quiz:', quizId)
+    // TODO: Implement toggle status functionality
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border bg-white shadow overflow-hidden p-6">
+        <Skeleton className="h-12 w-full mb-4" />
+        <Skeleton className="h-16 w-full mb-2" />
+        <Skeleton className="h-16 w-full mb-2" />
+        <Skeleton className="h-16 w-full mb-2" />
+        <Skeleton className="h-16 w-full mb-2" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="rounded-xl border bg-white shadow overflow-hidden p-8 text-center">
+        <p className="text-red-600 mb-4">Failed to load quizzes. Please try again.</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    )
+  }
+
+  // Empty state
+  if (!quizzes || quizzes.length === 0) {
+    return (
+      <div className="rounded-xl border bg-white shadow overflow-hidden p-8 text-center">
+        <p className="text-gray-600">No quizzes found. Create your first quiz to get started!</p>
+      </div>
     )
   }
 
   return (
     <div className="rounded-xl border bg-white shadow overflow-hidden">
       <Table>
-        <TableHeader className="bg-cyan-50">
+        <TableHeader 
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgb(59, 130, 246), rgb(6, 182, 212), rgb(37, 99, 235)),
+              url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='4.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E")
+            `,
+            backgroundBlendMode: 'overlay',
+            opacity: 0.85
+          }}
+        >
           <TableRow className="border-none hover:bg-transparent">
-            <TableHead className="font-semibold text-gray-700">Quiz ID</TableHead>
-            <TableHead className="font-semibold text-gray-700">Quiz Topic</TableHead>
-            <TableHead className="font-semibold text-gray-700">Total Responses</TableHead>
-            <TableHead className="font-semibold text-gray-700">Average Score</TableHead>
-            <TableHead className="font-semibold text-gray-700">Status</TableHead>
+            <TableHead className="font-semibold text-white">Share Link</TableHead>
+            <TableHead className="font-semibold text-white">Quiz Topic</TableHead>
+            <TableHead className="font-semibold text-white">Total Responses</TableHead>
+            <TableHead className="font-semibold text-white">Average Score</TableHead>
+            <TableHead className="font-semibold text-white">Status</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentQuizzes.map((quiz) => (
+          {quizzes.map((quiz) => (
             <TableRow key={quiz.id}>
-              <TableCell className="font-medium">{quiz.id}</TableCell>
+              <TableCell className="font-medium font-mono text-sm">{quiz.shareLink}</TableCell>
               <TableCell>{quiz.topic}</TableCell>
               <TableCell>{quiz.totalResponses}</TableCell>
-              <TableCell>{quiz.averageScore}%</TableCell>
+              <TableCell>
+                {quiz.averageScore !== null ? `${quiz.averageScore.toFixed(1)}%` : 'N/A'}
+              </TableCell>
               <TableCell>
                 <span
                   onClick={() => toggleStatus(quiz.id)}
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-all hover:scale-105 ${
-                    quiz.status === 'Active'
+                    quiz.isActive
                       ? 'bg-green-100 text-green-800 hover:bg-green-200'
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  {quiz.status}
+                  {quiz.isActive ? 'Active' : 'Inactive'}
                 </span>
               </TableCell>
               <TableCell>
@@ -141,7 +165,7 @@ export default function QuizTable() {
 
         <div className="flex items-center gap-6">
           <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages}
+            Page {currentPage} of {totalPages} {pagination && `(${pagination.total} total)`}
           </span>
           
           <div className="flex items-center gap-1">
@@ -149,7 +173,7 @@ export default function QuizTable() {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || isLoading}
               className="h-8 w-8 p-0"
             >
               <ChevronsLeft className="h-4 w-4" />
@@ -158,7 +182,7 @@ export default function QuizTable() {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || isLoading}
               className="h-8 w-8 p-0"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -167,7 +191,7 @@ export default function QuizTable() {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || isLoading}
               className="h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />
@@ -176,7 +200,7 @@ export default function QuizTable() {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || isLoading}
               className="h-8 w-8 p-0"
             >
               <ChevronsRight className="h-4 w-4" />

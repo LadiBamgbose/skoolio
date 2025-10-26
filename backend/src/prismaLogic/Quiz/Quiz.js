@@ -7,7 +7,9 @@ class QuizLogic {
   }
 
   // Create a new quiz
-  static async createQuiz(prompt, questions, gradeLevel, questionCount, ipAddress) {
+  // teacherId is optional - if provided, quiz is associated with teacher
+  // if not provided, quiz is anonymous and tracked by IP
+  static async createQuiz(prompt, questions, gradeLevel, questionCount, ipAddress, teacherId = null) {
     try {
       let shareLink = this.generateShareLink();
       let attempts = 0;
@@ -37,6 +39,7 @@ class QuizLogic {
           gradeLevel,
           questionCount,
           ipAddress,
+          teacherId, // Can be null for anonymous quizzes
         },
       });
     } catch (error) {
@@ -61,6 +64,26 @@ class QuizLogic {
       });
     } catch (error) {
       console.error('Error counting recent quizzes:', error);
+      throw error;
+    }
+  }
+
+  // Count quizzes created by teacher in the last month (for rate limiting authenticated users)
+  static async countRecentQuizzesByTeacher(teacherId) {
+    try {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      return await prisma.quiz.count({
+        where: {
+          teacherId,
+          createdAt: {
+            gte: oneMonthAgo
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error counting teacher recent quizzes:', error);
       throw error;
     }
   }

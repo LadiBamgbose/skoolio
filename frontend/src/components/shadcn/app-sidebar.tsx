@@ -16,44 +16,50 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/shadcn/sidebar"
+import { useAuth } from "@/contexts/AuthContext"
 
-// Teacher Dashboard data
-const data = {
-  user: {
-    name: "Teacher Name",
-    email: "teacher@skoolio.com",
-    avatar: "",
+// Navigation items (static)
+const navMain = [
+  {
+    title: "Dashboard",
+    url: "/teacher/dashboard",
+    icon: LayoutDashboard,
+    isActive: true,
   },
-  teams: [
-    {
-      name: "Skoolio",
-      logo: GraduationCap,
-      plan: "Teacher",
-    },
-  ],
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/teacher/dashboard",
-      icon: LayoutDashboard,
-      isActive: true,
-    },
-    {
-      title: "Quiz",
-      url: "/teacher/quiz",
-      icon: FileText,
-    },
-    {
-      title: "Students",
-      url: "#",
-      icon: Users,
-      disabled: true,
-      tooltip: "Coming soon",
-    },
-  ],
-}
+  {
+    title: "Quiz",
+    url: "/teacher/quiz",
+    icon: FileText,
+  },
+  {
+    title: "Students",
+    url: "#",
+    icon: Users,
+    disabled: true,
+    tooltip: "Coming soon",
+  },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  // Build dynamic data from authenticated user
+  const data = {
+    user: {
+      name: user ? `${user.firstName} ${user.lastName}` : "Guest User",
+      email: user?.email || "guest@skoolio.com",
+      avatar: "",
+    },
+    teams: [
+      {
+        name: "Skoolio",
+        logo: GraduationCap,
+        plan: user?.plan || "BASIC",
+      },
+    ],
+    navMain,
+  }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="bg-white">

@@ -73,6 +73,20 @@ class QuizService {
       throw error;
     }
   }
+
+  // Get teacher's quizzes with pagination (protected - requires auth)
+  static async getTeacherQuizzes(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<QuizTypes.TeacherQuizzesResponse> {
+    try {
+      const response: any = await ApiHandler.get(`/quiz/teacher/quizzes?page=${page}&limit=${limit}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching teacher quizzes:', error);
+      throw error;
+    }
+  }
 }
 
 export default QuizService;

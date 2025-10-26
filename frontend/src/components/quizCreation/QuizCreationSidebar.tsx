@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, ArrowUp } from 'lucide-react'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
-import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useQuizCreation } from '../../contexts/QuizCreationContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 const gradeLevels = [
   { id: 'k', name: 'K' },
@@ -30,17 +31,25 @@ const questionCounts = [
 
 const MIN_WIDTH = 300
 const MAX_WIDTH = 600
-const DEFAULT_WIDTH = 400
 
-export default function QuizCreationSidebar() {
+interface QuizCreationSidebarProps {
+  width: number
+  setWidth: (width: number) => void
+  onUpgradeClick: () => void
+}
+
+export default function QuizCreationSidebar({ width, setWidth, onUpgradeClick }: QuizCreationSidebarProps) {
   const [topic, setTopic] = useState('')
   const [gradeLevel, setGradeLevel] = useState(gradeLevels[5])
   const [questionCount, setQuestionCount] = useState(questionCounts[0])
   const [error, setError] = useState('')
-  const [width, setWidth] = useState(DEFAULT_WIDTH)
   const [isResizing, setIsResizing] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
+  const { generateQuiz, status } = useQuizCreation()
+  const { user } = useAuth()
+
+  const isBasicPlan = user?.plan === 'BASIC'
+  const isGenerateDisabled = !topic.trim() || status === 'loading' || status === 'success'
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -80,19 +89,13 @@ export default function QuizCreationSidebar() {
       return
     }
 
-    navigate('/loading', { 
-      state: { 
-        topic: topic.trim(), 
-        gradeLevel: gradeLevel.name,
-        questionCount: questionCount.id 
-      } 
-    })
+    generateQuiz(topic.trim(), gradeLevel.name, questionCount.id)
   }
 
   return (
     <div 
       ref={sidebarRef}
-      className="relative h-screen bg-white border-r border-gray-200 flex flex-col overflow-hidden flex-shrink-0"
+      className="fixed left-[16rem] top-0 h-screen bg-white border-r border-gray-200 flex flex-col overflow-hidden"
       style={{ width: `${width}px` }}
     >
       {/* Resize Handle */}
@@ -171,38 +174,54 @@ export default function QuizCreationSidebar() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Number of Questions
           </label>
-          <Listbox value={questionCount} onChange={setQuestionCount}>
-            <div className="relative">
-              <ListboxButton className="relative w-full cursor-pointer rounded-lg py-3 pl-4 pr-10 text-left border-2 border-gray-200 focus:border-cyan-400 focus:outline-none transition-colors">
-                <span className="block truncate text-gray-800 font-medium">
-                  {questionCount.name}
-                </span>
-                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  <ChevronDown className="h-5 w-5 text-gray-400" />
-                </span>
-              </ListboxButton>
-              <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 shadow-lg border border-gray-200 focus:outline-none z-10">
-                {questionCounts.map((count) => (
-                  <ListboxOption
-                    key={count.id}
-                    className="relative cursor-pointer select-none py-2 pl-4 pr-4 hover:bg-cyan-50 text-gray-900"
-                    value={count}
-                  >
-                    <span className="block truncate font-medium">
-                      {count.name}
-                    </span>
-                  </ListboxOption>
-                ))}
-              </ListboxOptions>
+          {isBasicPlan ? (
+            // For BASIC users - clickable div that shows upgrade modal
+            <div 
+              onClick={onUpgradeClick}
+              className="relative w-full cursor-pointer rounded-lg py-3 pl-4 pr-10 text-left border-2 border-gray-200 hover:border-cyan-400 transition-colors"
+            >
+              <span className="block truncate text-gray-800 font-medium">
+                {questionCount.name}
+              </span>
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              </span>
             </div>
-          </Listbox>
+          ) : (
+            // For TEACHER/ADVANCED users - normal dropdown
+            <Listbox value={questionCount} onChange={setQuestionCount}>
+              <div className="relative">
+                <ListboxButton className="relative w-full cursor-pointer rounded-lg py-3 pl-4 pr-10 text-left border-2 border-gray-200 focus:border-cyan-400 focus:outline-none transition-colors">
+                  <span className="block truncate text-gray-800 font-medium">
+                    {questionCount.name}
+                  </span>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                  </span>
+                </ListboxButton>
+                <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 shadow-lg border border-gray-200 focus:outline-none z-10">
+                  {questionCounts.map((count) => (
+                    <ListboxOption
+                      key={count.id}
+                      className="relative cursor-pointer select-none py-2 pl-4 pr-4 hover:bg-cyan-50 text-gray-900"
+                      value={count}
+                    >
+                      <span className="block truncate font-medium">
+                        {count.name}
+                      </span>
+                    </ListboxOption>
+                  ))}
+                </ListboxOptions>
+              </div>
+            </Listbox>
+          )}
         </div>
 
         {/* Generate Button */}
         <div className="mt-auto flex-shrink-0">
           <motion.button
             onClick={handleGenerateQuiz}
-            disabled={!topic.trim()}
+            disabled={isGenerateDisabled}
             className="relative w-full py-3 px-4 text-white font-semibold rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 overflow-hidden"
             style={{
               backgroundImage: `
@@ -211,10 +230,10 @@ export default function QuizCreationSidebar() {
               `,
               backgroundBlendMode: 'overlay'
             }}
-            whileHover={topic.trim() ? { 
+            whileHover={!isGenerateDisabled ? { 
               scale: 1.02,
             } : {}}
-            whileTap={topic.trim() ? { scale: 0.98 } : {}}
+            whileTap={!isGenerateDisabled ? { scale: 0.98 } : {}}
             transition={{ duration: 0.2 }}
           >
             <ArrowUp className="w-5 h-5 relative z-10" />
