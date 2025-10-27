@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import HeroSection from '../components/landing/HeroSection'
+import UsaMap from '../components/landing/UsaMap'
 import PricingSection from '../components/landing/PricingSection'
 
 export default function Landing() {
@@ -22,6 +23,7 @@ export default function Landing() {
   return (
     <div className="pt-20">
       <HeroSection />
+      <UsaMap />
       <PricingSection />
     </div>
   )
