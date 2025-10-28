@@ -87,6 +87,50 @@ class QuizService {
       throw error;
     }
   }
+
+  // Toggle quiz active status (protected - requires auth)
+  static async toggleQuizStatus(quizId: number): Promise<QuizTypes.ToggleQuizStatusResponse> {
+    try {
+      const response: any = await ApiHandler.patch(`/quiz/${quizId}/toggle-active`);
+      return response;
+    } catch (error) {
+      console.error('Error toggling quiz status:', error);
+      throw error;
+    }
+  }
+
+  // Delete quiz (protected - requires auth)
+  static async deleteQuiz(quizId: number): Promise<QuizTypes.DeleteQuizResponse> {
+    try {
+      const response: any = await ApiHandler.delete(`/quiz/${quizId}`);
+      return response;
+    } catch (error) {
+      console.error('Error deleting quiz:', error);
+      throw error;
+    }
+  }
+
+  // Get quiz details with questions (protected - requires auth)
+  static async getQuizDetails(quizId: number): Promise<QuizTypes.QuizDetailsResponse> {
+    try {
+      const response: any = await ApiHandler.get(`/quiz/${quizId}/details`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching quiz details:', error);
+      throw error;
+    }
+  }
+
+  // Get quiz responses (protected - requires auth)
+  static async getQuizResponses(quizId: number): Promise<QuizTypes.QuizResponsesResponse> {
+    try {
+      const response: any = await ApiHandler.get(`/quiz/${quizId}/stats`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching quiz responses:', error);
+      throw error;
+    }
+  }
 }
 
 export default QuizService;

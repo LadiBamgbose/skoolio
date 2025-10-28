@@ -23,26 +23,48 @@ import {
 } from "@/components/shadcn/dropdown-menu"
 import { Button } from "@/components/shadcn/button"
 import { Skeleton } from "@/components/shadcn/skeleton"
-import { useTeacherQuizzes } from "@/hooks/useQuiz.hook"
+import { useTeacherQuizzes, useToggleQuizStatus, useDeleteQuiz } from "@/hooks/useQuiz.hook"
+import DeleteConfirmationModal from "./DeleteConfirmationModal"
+import QuizDetailsModal from "./QuizDetailsModal"
+import type { QuizTypes } from "@/types/quiz.types"
 
 export default function QuizTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [quizToDelete, setQuizToDelete] = useState<{ id: number; topic: string } | null>(null)
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+  const [selectedQuiz, setSelectedQuiz] = useState<QuizTypes.TeacherQuiz | null>(null)
 
   const { data, isLoading, error } = useTeacherQuizzes(currentPage, pageSize)
+  const toggleStatusMutation = useToggleQuizStatus()
+  const deleteQuizMutation = useDeleteQuiz()
 
   const quizzes = data?.quizzes || []
   const pagination = data?.pagination
   const totalPages = pagination?.totalPages || 1
 
-  const handleDelete = (quizId: number) => {
-    console.log('Delete quiz:', quizId)
-    // TODO: Implement delete functionality
+  const handleRowClick = (quiz: QuizTypes.TeacherQuiz) => {
+    setSelectedQuiz(quiz)
+    setDetailsModalOpen(true)
   }
 
-  const toggleStatus = (quizId: number) => {
-    console.log('Toggle status for quiz:', quizId)
-    // TODO: Implement toggle status functionality
+  const handleDeleteClick = (e: React.MouseEvent, quizId: number, quizTopic: string) => {
+    e.stopPropagation() // Prevent row click
+    setQuizToDelete({ id: quizId, topic: quizTopic })
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (quizToDelete) {
+      deleteQuizMutation.mutate(quizToDelete.id)
+      setQuizToDelete(null)
+    }
+  }
+
+  const toggleStatus = (e: React.MouseEvent, quizId: number) => {
+    e.stopPropagation() // Prevent row click
+    toggleStatusMutation.mutate(quizId)
   }
 
   // Loading state
@@ -102,7 +124,11 @@ export default function QuizTable() {
         </TableHeader>
         <TableBody>
           {quizzes.map((quiz) => (
-            <TableRow key={quiz.id}>
+            <TableRow 
+              key={quiz.id}
+              onClick={() => handleRowClick(quiz)}
+              className="cursor-pointer hover:bg-cyan-50/50 transition-colors"
+            >
               <TableCell className="font-medium font-mono text-sm">{quiz.shareLink}</TableCell>
               <TableCell>{quiz.topic}</TableCell>
               <TableCell>{quiz.totalResponses}</TableCell>
@@ -111,7 +137,7 @@ export default function QuizTable() {
               </TableCell>
               <TableCell>
                 <span
-                  onClick={() => toggleStatus(quiz.id)}
+                  onClick={(e) => toggleStatus(e, quiz.id)}
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-all hover:scale-105 ${
                     quiz.isActive
                       ? 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -124,13 +150,17 @@ export default function QuizTable() {
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
+                    <Button 
+                      variant="ghost" 
+                      className="h-8 w-8 p-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem 
-                      onClick={() => handleDelete(quiz.id)}
+                      onClick={(e) => handleDeleteClick(e, quiz.id, quiz.topic)}
                       className="text-red-600 focus:text-red-600"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -208,6 +238,21 @@ export default function QuizTable() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        quizTopic={quizToDelete?.topic || ''}
+      />
+
+      {/* Quiz Details Modal */}
+      <QuizDetailsModal
+        isOpen={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        quiz={selectedQuiz}
+      />
     </div>
   )
 }

@@ -122,10 +122,25 @@ class QuizLogic {
   }
 
   // Delete quiz
-  static async deleteQuiz(id) {
+  static async deleteQuiz(quizId, teacherId) {
     try {
+      // First, verify the quiz belongs to the teacher
+      const quiz = await prisma.quiz.findUnique({
+        where: { id: quizId }
+      });
+
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+
+      // Verify ownership (only teacher can delete their own quiz)
+      if (quiz.teacherId !== teacherId) {
+        throw new Error('Unauthorized: You can only delete your own quizzes');
+      }
+
+      // Delete the quiz (cascade will delete responses and stats)
       return await prisma.quiz.delete({
-        where: { id }
+        where: { id: quizId }
       });
     } catch (error) {
       console.error('Error deleting quiz:', error);

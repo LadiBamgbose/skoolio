@@ -83,6 +83,54 @@ export namespace QuizTypes {
     quizzes: TeacherQuiz[];
     pagination: Pagination;
   }
+
+  export interface ToggleQuizStatusResponse {
+    success: boolean;
+    message: string;
+    quiz: {
+      id: number;
+      isActive: boolean;
+      shareLink: string;
+    };
+  }
+
+  export interface DeleteQuizResponse {
+    success: boolean;
+    message: string;
+  }
+
+  export interface QuizDetailsResponse {
+    success: boolean;
+    quiz: {
+      id: number;
+      topic: string;
+      questions: Question[];
+      gradeLevel: string;
+      questionCount: number;
+      isActive: boolean;
+      createdAt: string;
+    };
+  }
+
+  export interface QuizResponsesResponse {
+    success: boolean;
+    stats: {
+      totalResponses: number;
+      averageScore: number;
+      highestScore: number;
+      lowestScore: number;
+      averageTimeSeconds: number;
+      lastUpdated: string;
+    };
+    responses: Array<{
+      studentName: string;
+      score: number;
+      totalQuestions: number;
+      completedAt: string;
+      timeTaken?: number;
+      answers: any;
+    }>;
+  }
 }
 
 
