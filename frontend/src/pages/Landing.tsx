@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import HeroSection from '../components/landing/HeroSection'
 import UsaMap from '../components/landing/UsaMap'
+import TestimonialsSection from '../components/landing/TestimonialsSection'
 import PricingSection from '../components/landing/PricingSection'
 
 export default function Landing() {
@@ -24,6 +25,7 @@ export default function Landing() {
     <div className="pt-20">
       <HeroSection />
       <UsaMap />
+      <TestimonialsSection />
       <PricingSection />
     </div>
   )
