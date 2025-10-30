@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginFormData } from '../../schemas/auth.schema'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { BillingService } from '../../services'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -39,9 +40,28 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       await login(data.email, data.password)
       
-      // Success! Close modal and redirect to dashboard
+      // Success! Close modal
       reset()
       onClose()
+
+      // Check if user was trying to upgrade to a paid plan
+      const intendedPlan = localStorage.getItem('intendedPlan')
+      
+      if (intendedPlan && (intendedPlan === 'teacher' || intendedPlan === 'advanced')) {
+        // User logged in to get a paid plan, redirect to checkout immediately
+        try {
+          const { url } = await BillingService.createCheckoutSession(intendedPlan as 'teacher' | 'advanced')
+          localStorage.removeItem('intendedPlan') // Clear it
+          window.location.href = url // Redirect to Stripe checkout (no dashboard navigation)
+          return // Don't navigate to dashboard
+        } catch (error) {
+          console.error('Error creating checkout after login:', error)
+          localStorage.removeItem('intendedPlan')
+          // Only go to dashboard if checkout fails
+        }
+      }
+      
+      // Normal login flow OR checkout failed, go to dashboard
       navigate('/teacher/dashboard')
       
     } catch (error: any) {

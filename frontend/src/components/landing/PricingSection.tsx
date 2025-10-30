@@ -1,7 +1,17 @@
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import PricingCard from './PricingCard'
+import SignUpModal from '../shared/SignUpModal'
+import LoginModal from '../shared/LoginModal'
+import { useAuth } from '../../contexts/AuthContext'
+import { BillingService } from '../../services'
 
 export default function PricingSection() {
+  const { isAuthenticated } = useAuth()
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false)
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'teacher' | 'advanced' | null>(null)
   const pricingPlans = [
     {
       title: 'Basic',
@@ -18,12 +28,12 @@ export default function PricingSection() {
     },
     {
       title: 'Teacher',
-      price: '$9.99',
+      price: '$7.99',
       period: 'month',
       features: [
-        'Unlimited quizzes',
+        '60 quizzes per month',
         'All question types',
-        'Up to 50 questions per quiz',
+        'Up to 30 questions per quiz',
         'Advanced customization',
         'Grade-specific content',
         'Priority support',
@@ -34,10 +44,10 @@ export default function PricingSection() {
     },
     {
       title: 'Advanced',
-      price: '$19.99',
+      price: '$12.99',
       period: 'month',
       features: [
-        'Everything in Teacher',
+        '200 quizzes per month',
         'Unlimited questions per quiz',
         'Team collaboration',
         'Custom branding',
@@ -50,6 +60,50 @@ export default function PricingSection() {
       isPopular: false
     }
   ]
+
+  // Handle plan selection
+  const handlePlanSelect = async (plan: 'basic' | 'teacher' | 'advanced') => {
+    setSelectedPlan(plan)
+
+    // BASIC PLAN - Free tier
+    if (plan === 'basic') {
+      if (!isAuthenticated) {
+        // Show signup modal for free tier
+        setIsSignUpOpen(true)
+      } else {
+        // Already logged in, they already have basic
+        console.log('You are already on the free plan')
+      }
+      return
+    }
+
+    // TEACHER or ADVANCED PLAN - Paid tiers
+    if (!isAuthenticated) {
+      // Must signup first before upgrading
+      setIsSignUpOpen(true)
+      // Store intended plan in localStorage for after signup
+      localStorage.setItem('intendedPlan', plan)
+    } else {
+      // User is logged in, redirect to Stripe checkout
+      try {
+        setIsLoading(true)
+        const { url } = await BillingService.createCheckoutSession(plan)
+        // Redirect to Stripe checkout
+        window.location.href = url
+      } catch (error: any) {
+        console.error('Error creating checkout session:', error)
+        
+        // Handle specific errors
+        if (error?.response?.data?.error) {
+          alert(error.response.data.error)
+        } else {
+          alert('Failed to start checkout. Please try again.')
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-white via-gray-50 to-white">
@@ -72,26 +126,31 @@ export default function PricingSection() {
 
         {/* Pricing Cards Grid */}
         <div className="grid md:grid-cols-3 gap-12 max-w-7xl mx-auto items-stretch">
-          {pricingPlans.map((plan, index) => (
-            <motion.div
-              key={plan.title}
-              className="flex"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <PricingCard
-                title={plan.title}
-                price={plan.price}
-                period={plan.period}
-                features={plan.features}
-                isPopular={plan.isPopular}
-                buttonText={plan.buttonText}
-                onSelect={() => console.log(`Selected ${plan.title} plan`)}
-              />
-            </motion.div>
-          ))}
+          {pricingPlans.map((plan, index) => {
+            const planKey = plan.title.toLowerCase() as 'basic' | 'teacher' | 'advanced'
+            const isCurrentlyLoading = isLoading && selectedPlan === planKey
+            
+            return (
+              <motion.div
+                key={plan.title}
+                className="flex"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <PricingCard
+                  title={plan.title}
+                  price={plan.price}
+                  period={plan.period}
+                  features={plan.features}
+                  isPopular={plan.isPopular}
+                  buttonText={isCurrentlyLoading ? 'Loading...' : plan.buttonText}
+                  onSelect={() => handlePlanSelect(planKey)}
+                />
+              </motion.div>
+            )
+          })}
         </div>
 
         {/* Additional Info */}
@@ -105,6 +164,23 @@ export default function PricingSection() {
           All plans include AI-powered quiz generation and instant sharing
         </motion.p>
       </div>
+
+      {/* Sign Up Modal */}
+      <SignUpModal 
+        isOpen={isSignUpOpen} 
+        onClose={() => setIsSignUpOpen(false)}
+        triggerAction="signup"
+        onSwitchToLogin={() => {
+          setIsSignUpOpen(false)
+          setIsLoginOpen(true)
+        }}
+      />
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)}
+      />
     </section>
   )
 }

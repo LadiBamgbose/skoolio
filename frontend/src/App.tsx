@@ -8,6 +8,8 @@ import QuizGeneration from './pages/QuizGeneration'
 import StudentQuiz from './pages/StudentQuiz'
 import TeacherDashboard from './pages/TeacherDashboard'
 import QuizCreation from './pages/QuizCreation'
+import BillingSuccess from './pages/BillingSuccess'
+import BillingCancel from './pages/BillingCancel'
 import DashboardLayout from './layouts/DashboardLayout'
 
 function AppContent() {
@@ -23,6 +25,10 @@ function AppContent() {
           <Route path="/loading" element={<Loading />} />
           <Route path="/quiz-generation" element={<QuizGeneration />} />
           <Route path="/quiz/:shareLink" element={<StudentQuiz />} />
+          
+          {/* Billing routes */}
+          <Route path="/billing/success" element={<BillingSuccess />} />
+          <Route path="/billing/cancel" element={<BillingCancel />} />
           
           {/* Teacher routes with shared layout */}
           <Route 

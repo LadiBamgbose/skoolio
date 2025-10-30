@@ -6,14 +6,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpFormData } from '../../schemas/auth.schema'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { BillingService } from '../../services'
 
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
   triggerAction?: string; // "quiz", "signup", or "demo-limit" to customize messaging
+  onSwitchToLogin?: () => void; // Callback to switch to login modal
 }
 
-export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpModalProps) {
+export default function SignUpModal({ isOpen, onClose, triggerAction, onSwitchToLogin }: SignUpModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const { register: registerUser } = useAuth()
@@ -42,9 +44,28 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
       const { confirmPassword, ...registrationData } = data
       await registerUser(registrationData)
       
-      // Success! Close modal and redirect to dashboard
+      // Success! Close modal
       reset()
       onClose()
+
+      // Check if user was trying to upgrade to a paid plan
+      const intendedPlan = localStorage.getItem('intendedPlan')
+      
+      if (intendedPlan && (intendedPlan === 'teacher' || intendedPlan === 'advanced')) {
+        // User signed up to get a paid plan, redirect to checkout immediately
+        try {
+          const { url } = await BillingService.createCheckoutSession(intendedPlan as 'teacher' | 'advanced')
+          localStorage.removeItem('intendedPlan') // Clear it
+          window.location.href = url // Redirect to Stripe checkout (no dashboard navigation)
+          return // Don't navigate to dashboard
+        } catch (error) {
+          console.error('Error creating checkout after signup:', error)
+          localStorage.removeItem('intendedPlan')
+          // Only go to dashboard if checkout fails
+        }
+      }
+      
+      // Normal signup flow OR checkout failed, go to dashboard
       navigate('/teacher/dashboard')
       
     } catch (error: any) {
@@ -325,6 +346,24 @@ export default function SignUpModal({ isOpen, onClose, triggerAction }: SignUpMo
                 {' '}and{' '}
                 <a href="#" className="text-cyan-600 hover:underline">Privacy Policy</a>
               </motion.p>
+
+              {/* Already have account? */}
+              {onSwitchToLogin && (
+                <motion.p 
+                  className="text-sm text-gray-600 text-center mt-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  Already have an account?{' '}
+                  <button 
+                    onClick={onSwitchToLogin}
+                    className="text-cyan-600 hover:underline font-medium"
+                  >
+                    Log in
+                  </button>
+                </motion.p>
+              )}
             </div>
           </motion.div>
         </motion.div>
