@@ -13,7 +13,13 @@ export default function Landing() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate('/teacher/dashboard', { replace: true })
+      // Check if user is in the middle of a checkout flow
+      const intendedPlan = localStorage.getItem('intendedPlan')
+      
+      // Don't auto-redirect if user is about to checkout
+      if (!intendedPlan) {
+        navigate('/teacher/dashboard', { replace: true })
+      }
     }
   }, [isAuthenticated, isLoading, navigate])
 

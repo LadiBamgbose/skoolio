@@ -248,6 +248,53 @@ router.get('/teacher/quizzes', authMiddleware, async (req, res) => {
 // PARAMETERIZED ROUTES WITH SPECIFIC SUFFIXES
 // ============================================
 
+// GET /api/quiz/:quizId/details - Get full quiz details with questions (for teachers)
+router.get('/:quizId/details', authMiddleware, async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const teacherId = req.user.userId;
+
+    // Get quiz with questions
+    const quiz = await QuizLogic.getQuizById(parseInt(quizId));
+
+    if (!quiz) {
+      return res.status(404).json({
+        error: 'Quiz not found'
+      });
+    }
+
+    // Verify ownership
+    if (quiz.teacherId !== teacherId) {
+      return res.status(403).json({
+        error: 'Unauthorized: You can only view your own quizzes'
+      });
+    }
+
+    // Format questions data
+    const questionsData = quiz.questions;
+    const questions = questionsData.questions || [];
+
+    res.status(200).json({
+      success: true,
+      quiz: {
+        id: quiz.id,
+        topic: questionsData.topic || 'Untitled Quiz',
+        questions: questions,
+        gradeLevel: quiz.gradeLevel,
+        questionCount: quiz.questionCount,
+        isActive: quiz.isActive,
+        createdAt: quiz.createdAt
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching quiz details:', error);
+    res.status(500).json({
+      error: 'Failed to fetch quiz details'
+    });
+  }
+});
+
 // GET /api/quiz/:quizId/stats - Get quiz statistics (for teachers)
 router.get('/:quizId/stats', async (req, res) => {
   try {
@@ -404,6 +451,41 @@ router.patch('/:quizId/toggle-active', authMiddleware, async (req, res) => {
 
     res.status(500).json({
       error: 'Failed to toggle quiz status'
+    });
+  }
+});
+
+// DELETE /api/quiz/:quizId - Delete a quiz (for teachers)
+router.delete('/:quizId', authMiddleware, async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const teacherId = req.user.userId; // From auth middleware
+
+    // Delete the quiz (will verify ownership in logic)
+    await QuizLogic.deleteQuiz(parseInt(quizId), teacherId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Quiz deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting quiz:', error);
+
+    if (error.message === 'Quiz not found') {
+      return res.status(404).json({
+        error: 'Quiz not found'
+      });
+    }
+
+    if (error.message.includes('Unauthorized')) {
+      return res.status(403).json({
+        error: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Failed to delete quiz'
     });
   }
 });

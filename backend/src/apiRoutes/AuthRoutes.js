@@ -39,8 +39,14 @@ router.post('/register', async (req, res) => {
     const existingUser = await AuthLogic.findUserByEmailForAuth(email);
 
     if (existingUser) {
+      // Check if they have an active subscription
+      if (existingUser.subscriptionStatus === 'ACTIVE') {
+        return res.status(409).json({
+          error: 'An account with this email already exists with an active subscription. Please log in instead.'
+        });
+      }
       return res.status(409).json({
-        error: 'An account with this email already exists'
+        error: 'An account with this email already exists. Please log in instead.'
       });
     }
 
@@ -78,6 +84,9 @@ router.post('/register', async (req, res) => {
         city: user.city,
         state: user.state,
         plan: user.plan,
+        subscriptionStatus: user.subscriptionStatus,
+        currentPeriodEnd: user.currentPeriodEnd,
+        cancelAtPeriodEnd: user.cancelAtPeriodEnd,
         createdAt: user.createdAt
       }
     });
@@ -152,6 +161,9 @@ router.post('/login', async (req, res) => {
         city: user.city,
         state: user.state,
         plan: user.plan,
+        subscriptionStatus: user.subscriptionStatus,
+        currentPeriodEnd: user.currentPeriodEnd,
+        cancelAtPeriodEnd: user.cancelAtPeriodEnd,
         createdAt: user.createdAt
       }
     });
@@ -209,6 +221,9 @@ router.get('/me', async (req, res) => {
         city: user.city,
         state: user.state,
         plan: user.plan,
+        subscriptionStatus: user.subscriptionStatus,
+        currentPeriodEnd: user.currentPeriodEnd,
+        cancelAtPeriodEnd: user.cancelAtPeriodEnd,
         createdAt: user.createdAt
       }
     });

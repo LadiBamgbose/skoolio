@@ -7,6 +7,9 @@ export namespace AuthTypes {
     city: string;
     state: string;
     plan: 'BASIC' | 'TEACHER' | 'ADVANCED';
+    subscriptionStatus: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'INCOMPLETE' | 'TRIALING' | null;
+    currentPeriodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
     createdAt: string;
   }
 

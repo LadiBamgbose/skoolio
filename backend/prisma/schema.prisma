@@ -26,6 +26,13 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  // Stripe subscription fields (null for free tier users)
+  stripeCustomerId       String?              // Stripe customer ID
+  stripeSubscriptionId   String?              // Current subscription ID
+  subscriptionStatus     SubscriptionStatus?  // NULL for free users
+  currentPeriodEnd       DateTime?            // When billing period ends
+  cancelAtPeriodEnd      Boolean @default(false)
+  
   quizzes     Quiz[]
   quizUsage   QuizUsage[]
 }
@@ -34,7 +41,16 @@ model User {
 enum Plan {
   BASIC     // 5 quizzes/month - Free
   TEACHER   // 60 quizzes/month - $7.99
-  ADVANCED  // Unlimited - $12.99
+  ADVANCED  // 200 quizzes/month - $12.99
+}
+
+// Subscription status enum for Stripe subscriptions
+enum SubscriptionStatus {
+  ACTIVE          // Subscription is active
+  PAST_DUE        // Payment failed, grace period
+  CANCELED        // Subscription canceled
+  INCOMPLETE      // Payment not completed
+  TRIALING        // In trial period (if you add trials later)
 }
 
 // Quiz table - teachers generate quizzes
