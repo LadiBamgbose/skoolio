@@ -131,6 +131,19 @@ export namespace QuizTypes {
       answers: any;
     }>;
   }
+
+  export interface QuizUsageResponse {
+    success: boolean;
+    usage: {
+      used: number;
+      limit: number;
+      remaining: number;
+      canGenerate: boolean;
+      plan: 'BASIC' | 'TEACHER' | 'ADVANCED';
+      periodStart: string | null;
+      periodEnd: string | null;
+    };
+  }
 }
 
 

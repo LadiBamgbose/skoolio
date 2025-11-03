@@ -105,18 +105,34 @@ router.post('/customer-portal', authMiddleware, async (req, res) => {
     });
 
     if (!user || !user.stripeCustomerId) {
+      console.error(`User ${userId} has no stripeCustomerId`);
       return res.status(400).json({ error: 'No subscription found' });
     }
 
+    console.log(`Creating portal session for customer: ${user.stripeCustomerId}`);
+
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.APP_URL}/dashboard`,
+      return_url: `${process.env.APP_URL}/teacher/settings`,
     });
 
+    console.log(`✅ Portal session created successfully: ${session.id}`);
     res.json({ url: session.url });
   } catch (err) {
-    console.error('Customer portal error:', err);
-    res.status(500).json({ error: 'Failed to create portal session' });
+    console.error('❌ Customer portal error:', err);
+    console.error('Error type:', err.type);
+    console.error('Error message:', err.message);
+    console.error('Error code:', err.code);
+    
+    // Return more detailed error info in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? err.message 
+      : 'Failed to create portal session';
+    
+    res.status(500).json({ 
+      error: errorMessage,
+      hint: 'Make sure Stripe Customer Portal is activated in your Dashboard'
+    });
   }
 });
 

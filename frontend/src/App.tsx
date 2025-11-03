@@ -8,6 +8,7 @@ import QuizGeneration from './pages/QuizGeneration'
 import StudentQuiz from './pages/StudentQuiz'
 import TeacherDashboard from './pages/TeacherDashboard'
 import QuizCreation from './pages/QuizCreation'
+import Settings from './pages/Settings'
 import BillingSuccess from './pages/BillingSuccess'
 import BillingCancel from './pages/BillingCancel'
 import DashboardLayout from './layouts/DashboardLayout'
@@ -41,7 +42,7 @@ function AppContent() {
           >
             <Route path="dashboard" element={<TeacherDashboard />} />
             <Route path="quiz" element={<QuizCreation />} />
-            {/* Future routes like /teacher/quizzes, /teacher/settings go here */}
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
     </div>

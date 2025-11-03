@@ -116,7 +116,7 @@ export function NavUser({
                 <Bell />
                 Notifications
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/teacher/settings')}>
                 <Settings />
                 Settings
               </DropdownMenuItem>
