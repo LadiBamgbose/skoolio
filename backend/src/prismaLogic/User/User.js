@@ -69,6 +69,7 @@ class UserLogic {
       
       if (data.firstName) updateData.firstName = data.firstName.trim();
       if (data.lastName) updateData.lastName = data.lastName.trim();
+      if (data.email) updateData.email = data.email.trim().toLowerCase();
       if (data.city !== undefined) updateData.city = data.city?.trim() || null;
       if (data.state !== undefined) updateData.state = data.state?.trim() || null;
 
@@ -83,6 +84,9 @@ class UserLogic {
           city: true,
           state: true,
           plan: true,
+          subscriptionStatus: true,
+          currentPeriodEnd: true,
+          cancelAtPeriodEnd: true,
           createdAt: true,
           updatedAt: true
         }

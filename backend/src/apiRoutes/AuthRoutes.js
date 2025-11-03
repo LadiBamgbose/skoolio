@@ -1,6 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import AuthLogic from '../prismaLogic/Auth/Auth.js';
+import UserLogic from '../prismaLogic/User/User.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -233,6 +235,72 @@ router.get('/me', async (req, res) => {
     
     res.status(500).json({
       error: 'Failed to fetch user data'
+    });
+  }
+});
+
+// PUT /api/auth/profile - Update user profile (protected)
+router.put('/profile', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId; // From auth middleware
+    const { firstName, lastName, email, city, state } = req.body;
+
+    // Validation
+    if (!firstName || !lastName || !email || !city || !state) {
+      return res.status(400).json({
+        error: 'All fields are required'
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        error: 'Invalid email format'
+      });
+    }
+
+    // Check if email is already taken by another user
+    if (email !== req.user.email) {
+      const existingUser = await AuthLogic.findUserByEmailForAuth(email);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({
+          error: 'Email is already taken'
+        });
+      }
+    }
+
+    // Update profile
+    const updatedUser = await UserLogic.updateUserProfile(userId, {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim().toLowerCase(),
+      city: city.trim(),
+      state: state.trim()
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        city: updatedUser.city,
+        state: updatedUser.state,
+        plan: updatedUser.plan,
+        subscriptionStatus: updatedUser.subscriptionStatus,
+        currentPeriodEnd: updatedUser.currentPeriodEnd,
+        cancelAtPeriodEnd: updatedUser.cancelAtPeriodEnd,
+        createdAt: updatedUser.createdAt
+      }
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      error: 'Failed to update profile'
     });
   }
 });
