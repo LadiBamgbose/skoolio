@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import QuizService from '../services/quizService'
 
 interface Question {
@@ -29,6 +30,7 @@ export function QuizCreationProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<QuizStatus>('idle')
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const generateQuiz = async (topic: string, gradeLevel: string, questionCount: number) => {
     setStatus('loading')
@@ -38,6 +40,10 @@ export function QuizCreationProvider({ children }: { children: ReactNode }) {
       const response = await QuizService.generateQuiz(topic, gradeLevel, questionCount)
       setQuiz(response.quiz)
       setStatus('success')
+      
+      // Invalidate usage query to refresh the counter
+      queryClient.invalidateQueries({ queryKey: ['quizUsage'] })
+      queryClient.invalidateQueries({ queryKey: ['teacherStats'] })
     } catch (err: any) {
       console.error('Quiz generation failed:', err)
       

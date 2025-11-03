@@ -1,4 +1,5 @@
 import prisma from "../../services/prisma.js";
+import QuizUsageLogic from "./QuizUsage.js";
 
 class QuizLogic {
   // Generate a unique 6-digit share code (like Kahoot)
@@ -48,40 +49,59 @@ class QuizLogic {
     }
   }
 
-  // Count quizzes created by IP in the last month (for rate limiting)
+  // Count quizzes created by IP in current 30-day period (for anonymous users)
   static async countRecentQuizzesByIP(ipAddress) {
     try {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-      return await prisma.quiz.count({
-        where: {
-          ipAddress,
-          createdAt: {
-            gte: oneMonthAgo
-          }
-        }
-      });
+      // Use QuizUsage table for proper 30-day period tracking
+      const period = await QuizUsageLogic.getOrCreateUsagePeriodByIP(ipAddress);
+      return period.count;
     } catch (error) {
       console.error('Error counting recent quizzes:', error);
       throw error;
     }
   }
 
-  // Count quizzes created by teacher in the last month (for rate limiting authenticated users)
+  // Count quizzes created by teacher in their current billing period
+  // For PAID users: uses their Stripe billing cycle (currentPeriodEnd - 30 days to currentPeriodEnd)
+  // For FREE users: uses QuizUsage table tracking (30-day periods starting from first quiz)
   static async countRecentQuizzesByTeacher(teacherId) {
     try {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-      return await prisma.quiz.count({
-        where: {
-          teacherId,
-          createdAt: {
-            gte: oneMonthAgo
-          }
+      // Get user's subscription info
+      const user = await prisma.user.findUnique({
+        where: { id: teacherId },
+        select: {
+          plan: true,
+          subscriptionStatus: true,
+          currentPeriodEnd: true
         }
       });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // For PAID users with active subscription, use billing cycle
+      if (user.subscriptionStatus === 'ACTIVE' && user.currentPeriodEnd) {
+        // Calculate billing period start (30 days before period end)
+        const periodEnd = new Date(user.currentPeriodEnd);
+        const periodStart = new Date(periodEnd);
+        periodStart.setDate(periodStart.getDate() - 30);
+
+        return await prisma.quiz.count({
+          where: {
+            teacherId,
+            createdAt: {
+              gte: periodStart,
+              lte: periodEnd
+            }
+          }
+        });
+      }
+
+      // For FREE users (BASIC plan without subscription) - use QuizUsage table
+      const period = await QuizUsageLogic.getOrCreateUsagePeriod(teacherId);
+      return period.count;
+
     } catch (error) {
       console.error('Error counting teacher recent quizzes:', error);
       throw error;

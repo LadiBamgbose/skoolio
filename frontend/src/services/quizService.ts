@@ -74,6 +74,17 @@ class QuizService {
     }
   }
 
+  // Get quiz usage for current billing period (protected - requires auth)
+  static async getQuizUsage(): Promise<QuizTypes.QuizUsageResponse> {
+    try {
+      const response: any = await ApiHandler.get('/quiz/usage');
+      return response;
+    } catch (error) {
+      console.error('Error fetching quiz usage:', error);
+      throw error;
+    }
+  }
+
   // Get teacher's quizzes with pagination (protected - requires auth)
   static async getTeacherQuizzes(
     page: number = 1,

@@ -35,6 +35,7 @@ export default function HeroSection() {
   const [questionCount, setQuestionCount] = useState(questionCounts[0]) // Default to 5
   const [error, setError] = useState('')
   const [showSignUpModal, setShowSignUpModal] = useState(false)
+  const [signUpTrigger, setSignUpTrigger] = useState<string | undefined>(undefined)
   const isTeacherPlan = false // TODO: Get from auth context
   const navigate = useNavigate()
   const location = useLocation()
@@ -44,6 +45,14 @@ export default function HeroSection() {
     if (location.state?.error) {
       setError(location.state.error)
       // Clear the error from location state
+      navigate(location.pathname, { replace: true })
+    }
+    
+    // Check if we should open signup modal (rate limit reached)
+    if (location.state?.showSignUpModal) {
+      setSignUpTrigger('demo-limit')
+      setShowSignUpModal(true)
+      // Clear the flag from location state
       navigate(location.pathname, { replace: true })
     }
   }, [location.state, navigate, location.pathname])
@@ -284,8 +293,11 @@ export default function HeroSection() {
       {/* Sign Up Modal */}
       <SignUpModal 
         isOpen={showSignUpModal}
-        onClose={() => setShowSignUpModal(false)}
-        triggerAction="quiz"
+        onClose={() => {
+          setShowSignUpModal(false)
+          setSignUpTrigger(undefined)
+        }}
+        triggerAction={signUpTrigger}
       />
     </div>
   )

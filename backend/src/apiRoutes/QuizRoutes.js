@@ -1,8 +1,10 @@
 import express from 'express';
 import OpenAIService from '../services/OpenAIService.js';
 import QuizLogic from '../prismaLogic/Quiz/Quiz.js';
+import QuizUsageLogic from '../prismaLogic/Quiz/QuizUsage.js';
 import QuizResponseLogic from '../prismaLogic/Quiz/QuizResponse.js';
 import QuizStatsLogic from '../prismaLogic/Quiz/QuizStats.js';
+import prisma from '../services/prisma.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { optionalAuthMiddleware } from '../middleware/optionalAuthMiddleware.js';
 
@@ -57,14 +59,14 @@ router.post('/generate', optionalAuthMiddleware, async (req, res) => {
         const recentQuizCount = await QuizLogic.countRecentQuizzesByTeacher(teacherId);
         const userPlan = req.user.plan;
         
-        // Plan limits: BASIC = 5, TEACHER = 60, ADVANCED = unlimited
+        // Plan limits: BASIC = 5, TEACHER = 60, ADVANCED = 200
         let limit = 5;
         if (userPlan === 'TEACHER') limit = 60;
-        if (userPlan === 'ADVANCED') limit = Infinity;
+        if (userPlan === 'ADVANCED') limit = 200;
         
         if (recentQuizCount >= limit) {
           return res.status(429).json({
-            error: `${userPlan} plan limit reached. You can create ${limit} quizzes per month.`,
+            error: `${userPlan} plan limit reached. You can create ${limit} quizzes per billing period.`,
             rateLimitReached: true,
             currentPlan: userPlan,
             limit,
@@ -74,12 +76,12 @@ router.post('/generate', optionalAuthMiddleware, async (req, res) => {
         
         console.log(`Authenticated - Teacher ID: ${teacherId}, Plan: ${userPlan}, Used: ${recentQuizCount}/${limit}`);
       } else {
-        // For anonymous users: check by IP (3 per month)
+        // For anonymous users: check by IP (3 per 30-day period)
         const recentQuizCount = await QuizLogic.countRecentQuizzesByIP(clientIP);
         
         if (recentQuizCount >= 3) {
           return res.status(429).json({
-            error: 'Free plan limit reached. You can create 3 quizzes per month. Sign up for more!',
+            error: '🎓 You\'ve used all 3 free quizzes! Sign up to get 5 quizzes per month for free.',
             rateLimitReached: true,
             limit: 3,
             used: recentQuizCount
@@ -109,6 +111,15 @@ router.post('/generate', optionalAuthMiddleware, async (req, res) => {
       clientIP,
       teacherId
     );
+
+    // Increment usage counter for tracking limits
+    if (isAuthenticated) {
+      // For authenticated users - increment QuizUsage
+      await QuizUsageLogic.incrementUsage(teacherId);
+    } else {
+      // For anonymous users - increment by IP
+      await QuizUsageLogic.incrementUsageByIP(clientIP);
+    }
 
     // Return quiz data with share link
     res.status(200).json({
@@ -146,7 +157,7 @@ router.post('/generate', optionalAuthMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/quiz/status - Check if IP can create quiz
+// GET /api/quiz/status - Check if IP can create quiz (DEPRECATED - use /usage for authenticated)
 router.get('/status', async (req, res) => {
   try {
     const clientIP = getClientIP(req);
@@ -172,6 +183,75 @@ router.get('/status', async (req, res) => {
     console.error('Error checking quiz status:', error);
     res.status(500).json({
       error: 'Failed to check quiz status'
+    });
+  }
+});
+
+// GET /api/quiz/usage - Get authenticated user's quiz usage for current billing period
+router.get('/usage', authMiddleware, async (req, res) => {
+  try {
+    const teacherId = req.user.userId;
+    const userPlan = req.user.plan;
+
+    // Determine limit based on plan
+    let limit = 5; // BASIC
+    if (userPlan === 'TEACHER') limit = 60;
+    if (userPlan === 'ADVANCED') limit = 200;
+
+    // Get user's subscription info
+    const user = await prisma.user.findUnique({
+      where: { id: teacherId },
+      select: {
+        subscriptionStatus: true,
+        currentPeriodEnd: true
+      }
+    });
+
+    let usedCount = 0;
+    let periodStart = null;
+    let periodEnd = null;
+
+    // For PAID users with active subscription - use billing cycle
+    if (user.subscriptionStatus === 'ACTIVE' && user.currentPeriodEnd) {
+      // Count quizzes in billing period
+      periodEnd = new Date(user.currentPeriodEnd);
+      periodStart = new Date(periodEnd);
+      periodStart.setDate(periodStart.getDate() - 30);
+
+      usedCount = await prisma.quiz.count({
+        where: {
+          teacherId,
+          createdAt: {
+            gte: periodStart,
+            lte: periodEnd
+          }
+        }
+      });
+    } else {
+      // For FREE users - use QuizUsage table
+      const usagePeriod = await QuizUsageLogic.getOrCreateUsagePeriod(teacherId);
+      usedCount = usagePeriod.count;
+      periodStart = usagePeriod.periodStart;
+      periodEnd = usagePeriod.periodEnd;
+    }
+
+    res.status(200).json({
+      success: true,
+      usage: {
+        used: usedCount,
+        limit: limit,
+        remaining: Math.max(0, limit - usedCount),
+        canGenerate: usedCount < limit,
+        plan: userPlan,
+        periodStart: periodStart,
+        periodEnd: periodEnd
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching quiz usage:', error);
+    res.status(500).json({
+      error: 'Failed to fetch quiz usage'
     });
   }
 });

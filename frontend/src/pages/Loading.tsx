@@ -34,6 +34,9 @@ export default function Loading() {
       } catch (error: any) {
         console.error('Quiz generation failed:', error)
         
+        // Check if it's a rate limit error (for anonymous users)
+        const isRateLimitError = error?.response?.data?.rateLimitReached === true
+        
         // Handle specific error cases
         let errorMessage = 'Failed to generate quiz. Please try again.'
         
@@ -45,7 +48,10 @@ export default function Loading() {
 
         // Navigate back to home with error
         navigate('/', { 
-          state: { error: errorMessage },
+          state: { 
+            error: errorMessage,
+            showSignUpModal: isRateLimitError // Trigger signup modal if rate limit
+          },
           replace: true 
         })
       }

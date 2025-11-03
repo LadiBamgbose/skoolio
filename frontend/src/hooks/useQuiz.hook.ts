@@ -117,4 +117,14 @@ export const useQuizResponses = (quizId: number | null) => {
   });
 };
 
+// Hook to fetch quiz usage (for billing period tracking)
+export const useQuizUsage = () => {
+  return useQuery<QuizTypes.QuizUsageResponse, Error>({
+    queryKey: ['quizUsage'],
+    queryFn: () => QuizService.getQuizUsage(),
+    staleTime: 1000 * 60, // 1 minute - keep fresh for accurate limit tracking
+    refetchOnWindowFocus: true,
+  });
+};
+
 
