@@ -74,6 +74,23 @@ class AuthService {
   static getToken(): string | null {
     return localStorage.getItem('token');
   }
+
+  // Update user profile
+  static async updateProfile(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    city: string;
+    state: string;
+  }): Promise<any> {
+    try {
+      const response: any = await ApiHandler.put('/auth/profile', data);
+      return response;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  }
 }
 
 export default AuthService;
