@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import NameEntry from '../components/student-quiz/NameEntry'
 import QuizTaking from '../components/student-quiz/QuizTaking'
 import QuizService from '../services/quizService'
+import { trackEvent } from '../services/mixpanel'
 
 export default function StudentQuiz() {
   const { shareLink } = useParams<{ shareLink: string }>()
@@ -39,6 +40,15 @@ export default function StudentQuiz() {
   const handleStartQuiz = (name: string) => {
     setStudentName(name)
     setHasStarted(true)
+    
+    // Track quiz started in Mixpanel
+    trackEvent('Quiz Started', {
+      quizId: quiz.id,
+      quizTopic: quiz.topic,
+      gradeLevel: quiz.gradeLevel,
+      questionCount: quiz.questions?.length,
+      teacherId: quiz.teacherId,
+    })
   }
 
   if (loading) {

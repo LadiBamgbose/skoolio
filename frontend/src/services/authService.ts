@@ -1,5 +1,6 @@
 import ApiHandler from '../utils/ApiHandler';
 import type { AuthTypes } from '../types/auth.types';
+import { trackEvent, identifyUser, setUserProperties } from './mixpanel';
 
 class AuthService {
   
@@ -11,6 +12,26 @@ class AuthService {
       // Store token in localStorage
       if (response.token) {
         localStorage.setItem('token', response.token);
+      }
+      
+      // Track signup in Mixpanel
+      if (response.user) {
+        identifyUser(response.user.id);
+        setUserProperties({
+          email: response.user.email,
+          firstName: response.user.firstName,
+          lastName: response.user.lastName,
+          city: response.user.city,
+          state: response.user.state,
+          plan: response.user.plan,
+          subscriptionStatus: response.user.subscriptionStatus,
+          signupDate: response.user.createdAt,
+        });
+        trackEvent('User Signed Up', {
+          email: response.user.email,
+          method: 'email',
+          plan: response.user.plan,
+        });
       }
       
       return response;
@@ -28,6 +49,24 @@ class AuthService {
       // Store token in localStorage
       if (response.token) {
         localStorage.setItem('token', response.token);
+      }
+      
+      // Track login in Mixpanel
+      if (response.user) {
+        identifyUser(response.user.id);
+        setUserProperties({
+          email: response.user.email,
+          firstName: response.user.firstName,
+          lastName: response.user.lastName,
+          city: response.user.city,
+          state: response.user.state,
+          plan: response.user.plan,
+          subscriptionStatus: response.user.subscriptionStatus,
+        });
+        trackEvent('User Logged In', {
+          email: response.user.email,
+          plan: response.user.plan,
+        });
       }
       
       return response;

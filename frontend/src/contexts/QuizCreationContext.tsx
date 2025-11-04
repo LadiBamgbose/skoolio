@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import QuizService from '../services/quizService'
+import { useAuth } from './AuthContext'
 
 interface Question {
   question: string
@@ -31,13 +32,14 @@ export function QuizCreationProvider({ children }: { children: ReactNode }) {
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [error, setError] = useState<string | null>(null)
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   const generateQuiz = async (topic: string, gradeLevel: string, questionCount: number) => {
     setStatus('loading')
     setError(null)
     
     try {
-      const response = await QuizService.generateQuiz(topic, gradeLevel, questionCount)
+      const response = await QuizService.generateQuiz(topic, gradeLevel, questionCount, user?.id)
       setQuiz(response.quiz)
       setStatus('success')
       

@@ -1,5 +1,7 @@
 import ApiHandler from '../utils/ApiHandler';
 import type { QuizTypes } from '../types/quiz.types';
+import { trackEvent } from './mixpanel';
+import mixpanel from 'mixpanel-browser';
 
 class QuizService {
   
@@ -7,7 +9,8 @@ class QuizService {
   static async generateQuiz(
     prompt: string, 
     gradeLevel: string, 
-    questionCount: number
+    questionCount: number,
+    userId?: number
   ): Promise<QuizTypes.GenerateQuizResponse> {
     try {
       const payload: any = {
@@ -23,6 +26,22 @@ class QuizService {
       }
       
       const response: any = await ApiHandler.post('/quiz/generate', payload);
+      
+      // Track quiz creation in Mixpanel
+      if (response.success) {
+        trackEvent('Quiz Created', {
+          gradeLevel,
+          questionCount,
+          promptLength: prompt.trim().length,
+          isAuthenticated: !!userId,
+        });
+
+        // Increment user property for authenticated teachers
+        if (userId) {
+          mixpanel.people.increment('Quizzes Created');
+        }
+      }
+      
       return response;
     } catch (error) {
       console.error('Error generating quiz:', error);

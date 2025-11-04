@@ -34,6 +34,7 @@ export namespace QuizTypes {
       questions: QuestionWithoutAnswer[];
       gradeLevel: string;
       totalQuestions: number;
+      teacherId: number | null;
     };
   }
 
