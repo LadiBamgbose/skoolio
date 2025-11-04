@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ArrowRight, Trophy } from 'lucide-react'
 import QuizService from '../../services/quizService'
+import { trackEvent } from '../../services/mixpanel'
 
 interface Question {
   question: string
@@ -14,6 +15,7 @@ interface Quiz {
   topic: string
   gradeLevel: string
   questions: Question[]
+  teacherId?: number | null
 }
 
 interface QuizTakingProps {
@@ -58,6 +60,18 @@ export default function QuizTaking({ studentName, quiz }: QuizTakingProps) {
         )
         setResult(response.response)
         setIsComplete(true)
+        
+        // Track quiz completion in Mixpanel
+        trackEvent('Quiz Completed', {
+          quizId: quiz.id,
+          quizTopic: quiz.topic,
+          gradeLevel: quiz.gradeLevel,
+          teacherId: quiz.teacherId,
+          score: response.response.score,
+          totalQuestions: response.response.totalQuestions,
+          percentage: response.response.percentage,
+          timeTaken: timeTaken,
+        })
       } catch (error) {
         console.error('Error submitting quiz:', error)
         alert('Failed to submit quiz. Please try again.')

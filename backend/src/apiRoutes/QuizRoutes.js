@@ -611,7 +611,8 @@ router.get('/:shareLink', async (req, res) => {
         topic: quizData.topic,
         questions: questionsWithoutAnswers,
         gradeLevel: quiz.gradeLevel,
-        totalQuestions: quiz.questionCount
+        totalQuestions: quiz.questionCount,
+        teacherId: quiz.teacherId
       }
     });
 

@@ -1,35 +1,57 @@
-import 'dotenv/config';
+// server.js
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+
 import QuizRoutes from "./apiRoutes/QuizRoutes.js";
 import AuthRoutes from "./apiRoutes/AuthRoutes.js";
-import BillingRoutes from "./apiRoutes/BillingRoutes.js"
+import BillingRoutes from "./apiRoutes/BillingRoutes.js";
 import StripeWebhookRoutes from "./apiRoutes/StripeWebhookRoutes.js";
 
 const app = express();
-const PORT = 4000;
 
-app.use(cors());
+// --- Security headers
+app.use(helmet());
 
-// Stripe webhook route MUST come before express.json()
-// Needs raw body for signature verification
+// --- CORS: restrict to allowed origins from env
+// e.g. CORS_ORIGINS="https://skoolio.app,https://www.skoolio.app"
+const allowed = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowed.includes(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
+
+// --- Health check (for Sevalla)
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
+
+// --- Stripe webhook MUST come before express.json()
+// keeps raw body for signature verification
 app.use(
   "/api/billing/webhook",
-  express.raw({ type: 'application/json' }),
+  express.raw({ type: "application/json" }),
   StripeWebhookRoutes
 );
 
-// Parse JSON for all other routes
-app.use(express.json());
+// --- JSON for all other routes
+app.use(express.json({ limit: "1mb" }));
 
-// Auth routes
+// --- Routes
 app.use("/api/auth", AuthRoutes);
-// Quiz routes
 app.use("/api/quiz", QuizRoutes);
-// billing routes
 app.use("/api/billing", BillingRoutes);
 
+// --- Port: use platform-provided PORT or fallback
+const PORT = Number(process.env.PORT) || 4000;
 app.listen(PORT, () => {
-  console.log(`Server is live at http://localhost:${PORT}`);
+  console.log(`Server listening on :${PORT}`);
 });
-

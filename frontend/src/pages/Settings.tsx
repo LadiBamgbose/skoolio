@@ -126,7 +126,7 @@ export default function Settings() {
                 {/* Renewal Date */}
                 {subscriptionData.currentPeriodEnd && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500 mb-2 block flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       {subscriptionData.cancelAtPeriodEnd ? 'Expires' : 'Renews'} on
                     </label>

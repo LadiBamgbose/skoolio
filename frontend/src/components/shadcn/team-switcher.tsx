@@ -1,15 +1,7 @@
 import * as React from "react"
-import { ChevronsUpDown, Plus, PanelLeft } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "@/components/shadcn/dropdown-menu"
+
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -32,8 +24,8 @@ export function TeamSwitcher({
     plan: string
   }[]
 }) {
-  const { isMobile, state, toggleSidebar } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  const { state, toggleSidebar } = useSidebar()
+  const [activeTeam] = React.useState(teams[0])
 
   if (!activeTeam) {
     return null
