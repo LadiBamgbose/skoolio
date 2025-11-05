@@ -127,7 +127,7 @@ const UsaMap: React.FC = () => {
             customStates={customStates}
             mapSettings={{
               width: '100%',
-              height: 600,
+              height: 540,
               title: 'States where Skoolio is trusted'
             }}
           />

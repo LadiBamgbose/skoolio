@@ -131,6 +131,10 @@
 }
 
 @layer base {
+  html {
+    font-size: 80%; /* Scale entire app to 80% of default (16px -> 12.8px) */
+  }
+  
   * {
     @apply border-border outline-ring/50;
   }
