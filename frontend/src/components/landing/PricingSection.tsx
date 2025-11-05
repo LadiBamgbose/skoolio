@@ -5,6 +5,14 @@ import SignUpModal from '../shared/SignUpModal'
 import LoginModal from '../shared/LoginModal'
 import { useAuth } from '../../contexts/AuthContext'
 import { BillingService } from '../../services'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation, Pagination } from 'swiper/modules'
+// @ts-expect-error - CSS imports work at runtime
+import 'swiper/css'
+// @ts-expect-error - CSS imports work at runtime
+import 'swiper/css/navigation'
+// @ts-expect-error - CSS imports work at runtime
+import 'swiper/css/pagination'
 
 export default function PricingSection() {
   const { isAuthenticated } = useAuth()
@@ -124,8 +132,48 @@ export default function PricingSection() {
           </p>
         </motion.div>
 
-        {/* Pricing Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-12 max-w-7xl mx-auto items-stretch">
+        {/* Mobile Swiper Carousel */}
+        <div className="md:hidden mt-8">
+          <Swiper
+            modules={[Navigation, Pagination]}
+            spaceBetween={20}
+            slidesPerView={1.2}
+            centeredSlides={true}
+            initialSlide={1}
+            navigation={true}
+            pagination={{ clickable: true }}
+            className="!pb-12 !pt-6"
+            style={{
+              '--swiper-navigation-size': '24px',
+              '--swiper-navigation-color': '#06b6d4',
+              '--swiper-pagination-color': '#06b6d4',
+            } as React.CSSProperties}
+          >
+            {pricingPlans.map((plan, index) => {
+              const planKey = plan.title.toLowerCase() as 'basic' | 'teacher' | 'advanced'
+              const isCurrentlyLoading = isLoading && selectedPlan === planKey
+              
+              return (
+                <SwiperSlide key={plan.title}>
+                  <div className="h-full">
+                    <PricingCard
+                      title={plan.title}
+                      price={plan.price}
+                      period={plan.period}
+                      features={plan.features}
+                      isPopular={plan.isPopular}
+                      buttonText={isCurrentlyLoading ? 'Loading...' : plan.buttonText}
+                      onSelect={() => handlePlanSelect(planKey)}
+                    />
+                  </div>
+                </SwiperSlide>
+              )
+            })}
+          </Swiper>
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-12 max-w-7xl mx-auto items-stretch">
           {pricingPlans.map((plan, index) => {
             const planKey = plan.title.toLowerCase() as 'basic' | 'teacher' | 'advanced'
             const isCurrentlyLoading = isLoading && selectedPlan === planKey
