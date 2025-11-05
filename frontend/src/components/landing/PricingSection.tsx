@@ -149,7 +149,7 @@ export default function PricingSection() {
               '--swiper-pagination-color': '#06b6d4',
             } as React.CSSProperties}
           >
-            {pricingPlans.map((plan, index) => {
+            {pricingPlans.map((plan) => {
               const planKey = plan.title.toLowerCase() as 'basic' | 'teacher' | 'advanced'
               const isCurrentlyLoading = isLoading && selectedPlan === planKey
               
