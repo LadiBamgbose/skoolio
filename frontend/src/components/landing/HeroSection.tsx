@@ -92,7 +92,7 @@ export default function HeroSection() {
   }
 
   return (
-    <div className="bg-gradient-to-b from-white via-cyan-100 to-white py-16 px-4">
+    <div className="bg-gradient-to-b from-white via-cyan-100 to-white py-16 px-1 md:px-4">
       {/* Top Header with Skoolio */}
       <motion.div
         className="text-center pt-8"
@@ -157,7 +157,7 @@ export default function HeroSection() {
 
       {/* Text Area*/}
       <motion.div
-        className="w-full max-w-6xl px-8 mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
+        className="w-full max-w-[98%] md:max-w-6xl px-0 md:px-8 mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 1.2 }}
@@ -190,44 +190,44 @@ export default function HeroSection() {
                 if (error) setError('')
               }}
               placeholder="Enter a topic or paste your lesson text…"
-              className="w-full h-32 md:h-40 px-8 py-6 pr-[450px] pb-10 text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm"
+              className="w-full h-40 md:h-52 px-2 py-3 pr-[240px] md:px-8 md:py-6 md:pr-[450px] pb-10 text-base leading-tight md:text-xl border-2 border-gray-200 rounded-2xl focus:border-cyan-400 focus:outline-none resize-none transition-colors duration-200 bg-white shadow-sm placeholder:whitespace-nowrap"
               whileFocus={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             />
             
             {/* Character Count */}
-            <div className="absolute bottom-3 left-3">
-              <span className={`text-sm ${topic.length > 500 ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+            <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3">
+              <span className={`text-xs md:text-sm ${topic.length > 500 ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
                 {topic.length}/500
               </span>
             </div>
             
             {/* Dropdowns and Submit Button */}
-            <div className="absolute bottom-3 right-3 flex items-center gap-2">
+            <div className="absolute bottom-2 right-1 md:bottom-3 md:right-3 flex items-center gap-1.5 md:gap-2">
               {/* Questions Dropdown */}
               <Listbox value={questionCount} onChange={handleQuestionCountChange}>
                 <div className="relative">
                   <ListboxButton 
-                    className="relative w-40 cursor-pointer rounded-xl py-3 pl-4 pr-10 text-left shadow-md backdrop-blur-sm transition-all duration-200"
+                    className="relative w-[90px] md:w-40 cursor-pointer rounded-lg md:rounded-xl py-1.5 md:py-3 pl-1.5 md:pl-4 pr-5 md:pr-10 text-left shadow-md backdrop-blur-sm transition-all duration-200"
                     style={{
                       background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.15), rgba(37, 99, 235, 0.1))"
                     }}
                   >
-                    <span className="block truncate font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                    <span className="block truncate text-[10px] md:text-base font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
                       {questionCount.name}
                     </span>
-                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <ChevronDown className="h-5 w-5 text-cyan-500" aria-hidden="true" />
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-0.5 md:pr-3">
+                      <ChevronDown className="h-3 w-3 md:h-5 md:w-5 text-cyan-500" aria-hidden="true" />
                     </span>
                   </ListboxButton>
-                  <ListboxOptions className="absolute bottom-full mb-2 max-h-60 w-40 overflow-auto rounded-xl bg-white/95 backdrop-blur-md py-1 shadow-lg ring-1 ring-cyan-200 focus:outline-none z-10">
+                  <ListboxOptions className="absolute bottom-full mb-2 max-h-60 w-[90px] md:w-40 overflow-auto rounded-lg md:rounded-xl bg-white/95 backdrop-blur-md py-1 shadow-lg ring-1 ring-cyan-200 focus:outline-none z-10">
                     {questionCounts.map((count) => (
                       <ListboxOption
                         key={count.id}
-                        className="relative cursor-pointer select-none py-2 pl-4 pr-4 data-[focus]:bg-gradient-to-r data-[focus]:from-cyan-50 data-[focus]:to-blue-50 data-[focus]:text-cyan-900 text-gray-900"
+                        className="relative cursor-pointer select-none py-2 pl-2 md:pl-4 pr-2 md:pr-4 data-[focus]:bg-gradient-to-r data-[focus]:from-cyan-50 data-[focus]:to-blue-50 data-[focus]:text-cyan-900 text-gray-900"
                         value={count}
                       >
-                        <span className="block truncate data-[selected]:font-semibold data-[selected]:text-cyan-600 font-normal">
+                        <span className="block truncate text-[10px] md:text-base data-[selected]:font-semibold data-[selected]:text-cyan-600 font-normal">
                           {count.name}
                         </span>
                       </ListboxOption>
@@ -240,26 +240,26 @@ export default function HeroSection() {
               <Listbox value={gradeLevel} onChange={setGradeLevel}>
                 <div className="relative">
                   <ListboxButton 
-                    className="relative w-36 cursor-pointer rounded-xl py-3 pl-4 pr-10 text-left shadow-md backdrop-blur-sm transition-all duration-200"
+                    className="relative w-[75px] md:w-36 cursor-pointer rounded-lg md:rounded-xl py-1.5 md:py-3 pl-1.5 md:pl-4 pr-5 md:pr-10 text-left shadow-md backdrop-blur-sm transition-all duration-200"
                     style={{
                       background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.15), rgba(37, 99, 235, 0.1))"
                     }}
                   >
-                    <span className="block truncate font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                    <span className="block truncate text-[10px] md:text-base font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
                       {gradeLevel.name}
                     </span>
-                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <ChevronDown className="h-5 w-5 text-cyan-500" aria-hidden="true" />
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-0.5 md:pr-3">
+                      <ChevronDown className="h-3 w-3 md:h-5 md:w-5 text-cyan-500" aria-hidden="true" />
                     </span>
                   </ListboxButton>
-                  <ListboxOptions className="absolute bottom-full mb-2 max-h-60 w-36 overflow-auto rounded-xl bg-white/95 backdrop-blur-md py-1 shadow-lg ring-1 ring-cyan-200 focus:outline-none z-10">
+                  <ListboxOptions className="absolute bottom-full mb-2 max-h-60 w-[75px] md:w-36 overflow-auto rounded-lg md:rounded-xl bg-white/95 backdrop-blur-md py-1 shadow-lg ring-1 ring-cyan-200 focus:outline-none z-10">
                     {gradeLevels.map((level) => (
                       <ListboxOption
                         key={level.id}
-                        className="relative cursor-pointer select-none py-2 pl-4 pr-4 data-[focus]:bg-gradient-to-r data-[focus]:from-cyan-50 data-[focus]:to-blue-50 data-[focus]:text-cyan-900 text-gray-900"
+                        className="relative cursor-pointer select-none py-2 pl-2 md:pl-4 pr-2 md:pr-4 data-[focus]:bg-gradient-to-r data-[focus]:from-cyan-50 data-[focus]:to-blue-50 data-[focus]:text-cyan-900 text-gray-900"
                         value={level}
                       >
-                        <span className="block truncate data-[selected]:font-semibold data-[selected]:text-cyan-600 font-normal">
+                        <span className="block truncate text-[10px] md:text-base data-[selected]:font-semibold data-[selected]:text-cyan-600 font-normal">
                           {level.name}
                         </span>
                       </ListboxOption>
@@ -271,7 +271,7 @@ export default function HeroSection() {
               {/* Cyan gradient circle button */}
               <motion.button
                 onClick={handleGenerateGame}
-                className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed opacity-60"
+                className="w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed opacity-60"
                 style={{
                   background: "linear-gradient(135deg, #3b82f6, #06b6d4, #2563eb)"
                 }}
@@ -283,7 +283,7 @@ export default function HeroSection() {
                 transition={{ duration: 0.2 }}
                 disabled={!topic.trim()}
               >
-                <ArrowUp className="w-6 h-6 text-white" />
+                <ArrowUp className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </motion.button>
             </div>
           </div>

@@ -22,7 +22,7 @@ export default function PricingCard({
 }: PricingCardProps) {
   return (
     <motion.div
-      className={`relative rounded-2xl p-10 h-full flex flex-col w-full ${
+      className={`relative rounded-2xl p-8 md:p-10 min-h-[600px] md:h-full flex flex-col w-full ${
         isPopular
           ? 'bg-gradient-to-br from-cyan-50 via-blue-50 to-cyan-100 border-2 border-cyan-400 shadow-xl'
           : 'bg-white border-2 border-gray-200 shadow-lg'
@@ -43,7 +43,7 @@ export default function PricingCard({
       )}
 
       {/* Title */}
-      <h3 className={`text-2xl font-bold mb-2 ${
+      <h3 className={`text-3xl md:text-2xl font-bold mb-3 md:mb-2 ${
         isPopular 
           ? 'bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent' 
           : 'text-gray-900'
@@ -52,9 +52,9 @@ export default function PricingCard({
       </h3>
 
       {/* Price */}
-      <div className="mb-6">
+      <div className="mb-8 md:mb-6">
         <div className="flex items-baseline gap-1">
-          <span className={`text-5xl font-bold ${
+          <span className={`text-6xl md:text-5xl font-bold ${
             isPopular 
               ? 'bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent'
               : 'text-gray-900'
@@ -62,19 +62,19 @@ export default function PricingCard({
             {price}
           </span>
           {price !== 'Free' && (
-            <span className="text-gray-500 text-lg">/{period}</span>
+            <span className="text-gray-500 text-xl md:text-lg">/{period}</span>
           )}
         </div>
       </div>
 
       {/* Features */}
-      <ul className="space-y-4 mb-8 flex-grow">
+      <ul className="space-y-5 md:space-y-4 mb-10 md:mb-8 flex-grow">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start gap-3">
-            <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+            <Check className={`w-6 h-6 md:w-5 md:h-5 flex-shrink-0 mt-0.5 ${
               isPopular ? 'text-cyan-600' : 'text-gray-600'
             }`} />
-            <span className="text-gray-700">{feature}</span>
+            <span className="text-gray-700 text-lg md:text-base">{feature}</span>
           </li>
         ))}
       </ul>
@@ -82,7 +82,7 @@ export default function PricingCard({
       {/* CTA Button */}
       <motion.button
         onClick={onSelect}
-        className={`w-full py-3 px-6 rounded-xl font-semibold text-lg transition-all duration-200 ${
+        className={`w-full py-4 md:py-3 px-6 rounded-xl font-semibold text-xl md:text-lg transition-all duration-200 ${
           isPopular
             ? 'text-white shadow-lg'
             : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-cyan-400 hover:text-cyan-600'

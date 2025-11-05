@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Marquee from "react-fast-marquee";
 import { Star, Quote } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Testimonial {
   name: string;
@@ -87,6 +88,15 @@ const testimonials: Testimonial[] = [
 ];
 
 export default function TestimonialsSection() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <>
       <svg style={{ position: "absolute", width: 0, height: 0 }}>
@@ -147,16 +157,16 @@ export default function TestimonialsSection() {
           speed={50}
           pauseOnHover={true}
           gradient={true}
-          gradientColor="#cffafe"
-          gradientWidth={200}
+          gradientColor="rgba(207, 250, 254, 0.3)"
+          gradientWidth={isMobile ? 50 : 200}
           className="py-4"
           style={{ overflowY: "hidden" }}
         >
           {[...testimonials, ...testimonials].map((testimonial, cardIndex) => (
             <div
               key={cardIndex}
-              className="bg-white rounded-2xl p-8 mx-4 flex-shrink-0 flex flex-col"
-              style={{ width: "500px", height: "480px" }}
+              className="bg-white rounded-2xl p-6 md:p-8 mx-4 flex-shrink-0 flex flex-col"
+              style={{ width: isMobile ? "320px" : "500px", height: isMobile ? "420px" : "480px" }}
             >
               {/* Quote Icon */}
               <div className="mb-6">
