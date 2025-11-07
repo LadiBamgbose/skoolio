@@ -50,7 +50,7 @@ export default function GeneralTab({
         <div className="flex items-center justify-between py-3 border-b border-gray-200">
           <span className="text-sm font-medium text-gray-600">Share Link:</span>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-mono text-gray-900">skoolio.us/quiz/{quiz.shareLink}</span>
+            <span className="text-sm font-mono text-gray-900">skoolio.app/quiz/{quiz.shareLink}</span>
             <button
               onClick={copyShareLink}
               className="text-xs text-cyan-600 hover:text-cyan-700 font-medium"

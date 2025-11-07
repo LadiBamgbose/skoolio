@@ -46,7 +46,7 @@ export default function QuizDetailsModal({ isOpen, onClose, quiz }: QuizDetailsM
 
   const copyShareLink = () => {
     if (!quiz) return
-    const fullLink = `https://skoolio.us/quiz/${quiz.shareLink}`
+    const fullLink = `https://skoolio.app/quiz/${quiz.shareLink}`
     navigator.clipboard.writeText(fullLink)
   }
 
