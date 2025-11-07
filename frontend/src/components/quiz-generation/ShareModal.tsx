@@ -12,7 +12,7 @@ interface ShareModalProps {
 export default function ShareModal({ isOpen, onClose, shareLink }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
   const { user } = useAuth()
-  const quizUrl = `skoolio.us/quiz/${shareLink}`
+  const quizUrl = `skoolio.app/quiz/${shareLink}`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(`https://${quizUrl}`)
