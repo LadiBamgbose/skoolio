@@ -1,9 +1,15 @@
 import { motion } from 'framer-motion'
 import { XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { trackEvent } from '../services/mixpanel'
 
 export default function BillingCancel() {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    trackEvent('Billing Cancel viewed')
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">

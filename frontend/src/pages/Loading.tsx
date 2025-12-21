@@ -2,10 +2,15 @@ import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import QuizService from '../services/quizService'
+import { trackEvent } from '../services/mixpanel'
 
 export default function Loading() {
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    trackEvent('Loading viewed')
+  }, [])
 
   useEffect(() => {
     const generateQuiz = async () => {

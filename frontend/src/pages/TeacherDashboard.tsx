@@ -1,13 +1,20 @@
+import { useEffect } from 'react'
 import StatsCard from "@/components/TeacherDashboard/StatsCard"
 import QuizTable from "@/components/TeacherDashboard/QuizTable"
 import { useTeacherStats, useQuizUsage } from "@/hooks/useQuiz.hook"
 import { Skeleton } from "@/components/shadcn/skeleton"
 import { useNavigate } from "react-router-dom"
+import { trackEvent } from '../services/mixpanel'
+import BugReportButton from '../components/shared/BugReportButton'
 
 export default function TeacherDashboard() {
   const { data, isLoading, error } = useTeacherStats()
   const { data: usageData, isLoading: isLoadingUsage } = useQuizUsage()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    trackEvent('Teacher Dashboard viewed')
+  }, [])
 
   const usage = usageData?.usage
   console.log(usage)
@@ -18,7 +25,14 @@ export default function TeacherDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 relative">
+      <BugReportButton
+        onClick={() => {
+          // Placeholder for now
+          console.log('Bug report clicked')
+        }}
+      />
+
       {/* Usage Counter Card */}
       {!isLoadingUsage && usage && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

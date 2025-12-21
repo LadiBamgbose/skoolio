@@ -4,6 +4,7 @@ import { ArrowUp, ChevronDown } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
 import SignUpModal from '../shared/SignUpModal'
+import LiquidEther from '../LiquidEther'
 
 const gradeLevels = [
   { id: 'k', name: 'K' },
@@ -92,10 +93,29 @@ export default function HeroSection() {
   }
 
   return (
-    <div className="bg-gradient-to-b from-white via-cyan-100 to-white py-16 px-1 md:px-4">
+    <div className="relative overflow-hidden bg-gradient-to-b from-white via-cyan-100 to-white py-16 px-1 md:px-4">
+      {/* Liquid Ether Background */}
+      <div className="absolute inset-0 z-0 [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
+        <LiquidEther
+          colors={['#cffafe', '#a5f3fc', '#67e8f9']}
+          mouseForce={35}
+          cursorSize={50}
+          iterationsViscous={40}
+          iterationsPoisson={32}
+          resolution={0.4}
+          isBounce={false}
+          autoDemo={false}
+          autoSpeed={0.3}
+          autoIntensity={2.2}
+          takeoverDuration={0.15}
+          autoResumeDelay={2000}
+          autoRampDuration={0.6}
+        />
+      </div>
+
       {/* Top Header with Skoolio */}
       <motion.div
-        className="text-center pt-8"
+        className="relative z-10 text-center pt-8"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ 
@@ -157,7 +177,7 @@ export default function HeroSection() {
 
       {/* Text Area*/}
       <motion.div
-        className="w-full max-w-[98%] md:max-w-6xl px-0 md:px-8 mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
+        className="relative z-10 w-full max-w-[98%] md:max-w-6xl px-0 md:px-8 mx-auto text-center flex flex-col items-center justify-center min-h-[50vh]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 1.2 }}

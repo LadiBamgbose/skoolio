@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { User, Mail, MapPin, Save, CheckCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { AuthService } from '../services'
+import { trackEvent } from '../services/mixpanel'
 
 export default function Account() {
   const { user, refreshUser } = useAuth()
@@ -10,6 +11,10 @@ export default function Account() {
   const [isSaving, setIsSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    trackEvent('Account viewed')
+  }, [])
 
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',

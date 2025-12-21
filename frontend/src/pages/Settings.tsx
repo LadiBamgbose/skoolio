@@ -4,6 +4,7 @@ import { CreditCard, Calendar, AlertCircle, ExternalLink } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { BillingService } from '../services'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
+import { trackEvent } from '../services/mixpanel'
 
 export default function Settings() {
   const { user } = useAuth()
@@ -12,6 +13,7 @@ export default function Settings() {
   const [isLoadingPortal, setIsLoadingPortal] = useState(false)
 
   useEffect(() => {
+    trackEvent('Settings viewed')
     fetchSubscriptionStatus()
   }, [])
 

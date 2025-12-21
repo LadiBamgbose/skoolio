@@ -1,9 +1,15 @@
+import { useEffect } from 'react'
 import { useQuizCreation } from '../contexts/QuizCreationContext'
 import LoadingAnimation from '../components/quizCreation/LoadingAnimation'
 import QuizResults from '../components/quizCreation/QuizResults'
+import { trackEvent } from '../services/mixpanel'
 
 export default function QuizCreation() {
   const { status, quiz, error } = useQuizCreation()
+
+  useEffect(() => {
+    trackEvent('Quiz Creation viewed')
+  }, [])
 
   // Idle state - show placeholder
   if (status === 'idle') {
