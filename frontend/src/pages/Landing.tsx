@@ -6,10 +6,16 @@ import HeroSection from '../components/landing/HeroSection'
 import UsaMap from '../components/landing/UsaMap'
 import TestimonialsSection from '../components/landing/TestimonialsSection'
 import PricingSection from '../components/landing/PricingSection'
+import { trackEvent } from '../services/mixpanel'
 
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Track page view
+    trackEvent('Landing viewed')
+  }, [])
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {

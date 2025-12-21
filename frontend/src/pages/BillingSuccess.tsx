@@ -2,11 +2,13 @@ import { motion } from 'framer-motion'
 import { CheckCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { trackEvent } from '../services/mixpanel'
 
 export default function BillingSuccess() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    trackEvent('Billing Success viewed')
     // Optional: Refresh user data to get updated subscription status
     // This could be done via AuthContext.refreshUser()
   }, [])

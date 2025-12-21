@@ -1,8 +1,9 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import QuizCard from '../components/quiz-generation/QuizCard'
 import ShareModal from '../components/quiz-generation/ShareModal'
+import { trackEvent } from '../services/mixpanel'
 
 interface Question {
   question: string
@@ -38,6 +39,10 @@ export default function QuizGeneration() {
   const quiz = location.state?.quiz
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showShareModal, setShowShareModal] = useState(false)
+
+  useEffect(() => {
+    trackEvent('Quiz Generation viewed')
+  }, [])
 
   // Redirect if no quiz data
   if (!quiz) {

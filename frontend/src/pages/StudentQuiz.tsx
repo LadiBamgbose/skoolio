@@ -15,6 +15,12 @@ export default function StudentQuiz() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    trackEvent('Student Quiz viewed', {
+      shareLink: shareLink
+    })
+  }, [shareLink])
+
+  useEffect(() => {
     if (!shareLink) {
       navigate('/')
       return
