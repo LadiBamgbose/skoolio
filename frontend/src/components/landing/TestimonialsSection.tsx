@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import Marquee from "react-fast-marquee";
-import { Star, Quote } from "lucide-react";
+import { Quote } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface Testimonial {
@@ -99,21 +99,6 @@ export default function TestimonialsSection() {
 
   return (
     <>
-      <svg style={{ position: "absolute", width: 0, height: 0 }}>
-        <defs>
-          <linearGradient
-            id="gold-gradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop offset="0%" stopColor="#fef08a" />
-            <stop offset="50%" stopColor="#fde047" />
-            <stop offset="100%" stopColor="#facc15" />
-          </linearGradient>
-        </defs>
-      </svg>
       <style>{`
         .react-fast-marquee,
         .react-fast-marquee * {
@@ -155,18 +140,30 @@ export default function TestimonialsSection() {
 
         <Marquee
           speed={50}
-          pauseOnHover={true}
+          pauseOnHover={false}
           gradient={true}
           gradientColor="rgba(207, 250, 254, 0.3)"
           gradientWidth={isMobile ? 50 : 200}
           className="py-4"
           style={{ overflowY: "hidden" }}
         >
-          {[...testimonials, ...testimonials].map((testimonial, cardIndex) => (
-            <div
+          {[...testimonials, ...testimonials].map((testimonial, cardIndex) => {
+            const isEven = cardIndex % 2 === 0;
+            return (
+            <motion.div
               key={cardIndex}
               className="bg-white rounded-2xl p-6 md:p-8 mx-4 flex-shrink-0 flex flex-col"
               style={{ width: isMobile ? "320px" : "500px", height: isMobile ? "420px" : "480px" }}
+              animate={{
+                y: isEven ? [0, -10, 0] : [0, 10, 0],
+                rotate: isEven ? [0, 1.5, -1.5, 0] : [0, -1.5, 1.5, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear",
+                delay: cardIndex * 0.2,
+              }}
             >
               {/* Quote Icon */}
               <div className="mb-6">
@@ -218,19 +215,9 @@ export default function TestimonialsSection() {
                   </p>
                 </div>
               </div>
-
-              {/* Stars */}
-              <div className="flex gap-1 mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5"
-                    style={{ fill: "url(#gold-gradient)", stroke: "none" }}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+            </motion.div>
+            );
+          })}
         </Marquee>
       </div>
     </>
