@@ -1,16 +1,18 @@
 <div align="center">
 
+
 # Skoolio
 
 ### AI-powered quiz generation platform built as a production-grade SaaS system.
 
 </div>
 
-<div align="center">
-  <video width="900" controls>
-    <source src="media/skoolio-demo.MP4" type="video/mp4" />
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/661f73af-b523-4b18-9b01-2f4d73bc7af9"
+         width="900"
+         controls>
   </video>
-</div>
+</p>
 
 ---
 
@@ -25,9 +27,15 @@ The system supports:
 - Real-time analytics and performance tracking
 - Structured LLM validation before database persistence
 
-This project was built and deployed as a real production system at (LIVE URL):
+<div align="center">
 
-**https://skoolio.app**
+<h3>🌐 Live Production Application</h3>
+
+<a href="https://skoolio.app" target="_blank">
+  <strong>👉 Launch Skoolio (skoolio.app)</strong>
+</a>
+
+</div>
 
 ---
 
