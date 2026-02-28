@@ -6,6 +6,10 @@
 
 </div>
 
+<div align="center">
+  <video src="./media/skoolio-demo.mp4" width="900" controls></video>
+</div>
+
 ---
 
 ## 🚀 Overview
