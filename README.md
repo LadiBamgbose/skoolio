@@ -162,6 +162,13 @@ Indexes implemented for performance:
 
 ## ⚙️ Local Development
 
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+
 ### Backend
 
 ```bash
