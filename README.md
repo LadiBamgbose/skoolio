@@ -162,13 +162,6 @@ Indexes implemented for performance:
 
 ## ⚙️ Local Development
 
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-
 ### Backend
 
 ```bash
@@ -177,3 +170,30 @@ npm install
 npx prisma generate
 npx prisma migrate dev
 npm run dev
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Required Environment Variables
+
+#### Backend (.env in /backend)
+
+- DATABASE_URL
+- JWT_SECRET
+- OPENAI_API_KEY
+- STRIPE_SECRET_KEY
+- STRIPE_WEBHOOK_SECRET
+- STRIPE_PRICE_TEACHER
+- STRIPE_PRICE_ADVANCED
+- APP_URL
+
+#### Frontend (.env in /frontend)
+
+- VITE_API_URL
+- VITE_MIXPANEL_TOKEN (optional)
