@@ -6,13 +6,13 @@
 ### AI-powered quiz generation platform built as a production-grade SaaS system.
 
 </div>
-
-<p align="center">
-  <video src="https://github.com/user-attachments/assets/661f73af-b523-4b18-9b01-2f4d73bc7af9"
-         width="900"
-         controls>
-  </video>
-</p>
+<div align="center" style="margin-top: 20px; margin-bottom: 20px;">
+  <video
+    src="https://github.com/user-attachments/assets/e5888b80-f72c-4bef-997a-1a9354653ff7"
+    width="380"
+    controls
+  ></video>
+</div>
 
 ---
 
