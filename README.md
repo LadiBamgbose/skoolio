@@ -7,7 +7,9 @@
 </div>
 
 <div align="center">
-  <video src="./media/skoolio-demo.mp4" width="900" controls></video>
+  <video width="900" controls>
+    <source src="media/skoolio-demo.MP4" type="video/mp4" />
+  </video>
 </div>
 
 ---
@@ -23,7 +25,7 @@ The system supports:
 - Real-time analytics and performance tracking
 - Structured LLM validation before database persistence
 
-This project was built and deployed as a real production system at:
+This project was built and deployed as a real production system at (LIVE URL):
 
 **https://skoolio.app**
 
